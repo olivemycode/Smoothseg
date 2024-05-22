@@ -1,0 +1,22 @@
+Package: Smoothseg
+Type: Package
+Title: Generating and Plotting Multiple Changepoint Predictions
+Version: 0.1.0
+Author: Oliver Li
+Maintainer: Oliver Li <oli.li@alumni.unc.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    ggplot2,
+    npmlda,
+    plotly,
+    segmented,
+    tidyr,
+    zoo
+RoxygenNote: 7.3.1
+Depends: 
+    tidyverse
