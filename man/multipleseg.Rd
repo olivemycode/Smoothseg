@@ -6,7 +6,7 @@
 \usage{
 multipleseg(
   df,
-  d,
+  w,
   y,
   n,
   interest = c(),
@@ -18,13 +18,13 @@ multipleseg(
 \arguments{
 \item{df}{A dataframe that will be processed.}
 
-\item{d}{Numeric or date vector that will become the x-axis for the final plot.}
+\item{w}{Numeric or date vector that will become the x-axis for the final plot.}
 
-\item{y}{Numeric response vector that is the same length as d.}
+\item{y}{Numeric response vector that is the same length as w.}
 
 \item{n}{Numeric vector containing the desired changepoints to be predicted.}
 
-\item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as d.}
+\item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as w.}
 
 \item{col}{Color of line to indicate points of interest (default set to "red").}
 

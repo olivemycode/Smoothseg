@@ -1,11 +1,11 @@
 Package: Smoothseg
 Type: Package
 Title: Generating and Plotting Multiple Changepoint Predictions
-Version: 0.1.0
+Version: 0.1.1
 Author: Oliver Li
 Maintainer: Oliver Li <oli.li@alumni.unc.edu>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Smoothseg is a package with functions for generating interactive plotly objects for changepoint predictions.
+    It can accommodate irregularly spaced data as well as timeseries.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

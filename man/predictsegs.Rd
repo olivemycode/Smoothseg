@@ -6,7 +6,7 @@
 \usage{
 predictsegs(
   df,
-  d,
+  w,
   y,
   k,
   z = "bic",
@@ -20,9 +20,9 @@ predictsegs(
 \arguments{
 \item{df}{A dataframe that will be processed.}
 
-\item{d}{Numeric or date vector that will become the x-axis for the final plot.}
+\item{w}{Numeric or date vector that will become the x-axis for the final plot.}
 
-\item{y}{Numeric response vector that is the same length as d.}
+\item{y}{Numeric response vector that is the same length as w.}
 
 \item{k}{Numeric vector containing the max number of automatically-detected changepoints to be predicted.}
 
@@ -30,7 +30,7 @@ predictsegs(
 
 \item{g}{Number of user-specified sub-intervals to examine when searching for changepoints (default set to 1).}
 
-\item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as d.}
+\item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as w.}
 
 \item{col}{Color of line to indicate points of interest (default set to "red").}
 
