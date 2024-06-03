@@ -14,7 +14,11 @@ predictsegs(
   interest = c(),
   col = "red",
   linet = "dashed",
-  date = FALSE
+  date = FALSE,
+  ar = FALSE,
+  p = 1,
+  d = 0,
+  q = 0
 )
 }
 \arguments{
