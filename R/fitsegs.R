@@ -40,9 +40,8 @@ fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", 
   segfit <- lm(y ~ 1 + x, data = df) # Store fitted regression object
 
   if (ar == TRUE){
-    arimats <- ts(y, start = min(df$Index), end = max(df$Index))
 
-    arimafit <- arima(arimats, order = c(p, d, q))
+    arimafit <- arima(y, order = c(p, d, q))
 
     residuals_arima <- residuals(arimafit)
 
