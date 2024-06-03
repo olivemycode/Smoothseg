@@ -19,7 +19,7 @@
 #' @import plotly
 #' @import zoo
 
-multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", date = FALSE){
+multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE, p = 1, d = 0, q = 0){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -34,6 +34,17 @@ multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashe
   n <- sort(n) # Sort number of changepoints in ascending order
 
   segfit <- lm(y ~ 1 + x, data = df) # Run linear model using selected variables with an intercept
+
+  if (ar == TRUE){
+
+    arimafit <- arima(y, order = c(p, d, q))
+
+    fits_arima <- fitted(arimafit)
+
+    df$fits <- fits_arima
+
+    segfit <- lm(fits ~ 1 + x, data = df)
+  }
 
   storage <- list() # Create empty list to store dataframes
 

@@ -22,7 +22,7 @@
 #' @import plotly
 #' @import zoo
 
-predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE){
+predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE, p = 1, d = 0, q = 0){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -37,6 +37,17 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
   k <- sort(k) # Sort max number of changepoints in ascending order
 
   predfit <- lm(y ~ 1 + x, data = df) # Run linear model using selected variables with an intercept
+
+  if (ar == TRUE){
+
+    arimafit <- arima(y, order = c(p, d, q))
+
+    fits_arima <- fitted(arimafit)
+
+    df$fits <- fits_arima
+
+    predfit <- lm(fits ~ 1 + x, data = df)
+  }
 
   predstorage <- list() # Create empty list to store dataframes
 

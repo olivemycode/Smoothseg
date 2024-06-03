@@ -47,7 +47,7 @@ fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", 
 
     df$fits <- fits_arima
 
-    segfit <- lm(fits ~ x, data = df)
+    segfit <- lm(fits ~ 1 + x, data = df)
   }
 
   storage <- list() # Create empty list to store dataframes
