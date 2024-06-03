@@ -14,7 +14,9 @@
 #' @param u Units for the x variable to calculate time interval (set to "days" by default).
 #' @return Returns a dataframe that has columns for simple moving average and exponential moving average based on specified parameters.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 #' @import zoo
 
 ma <- function(df, x, y, alpha = 1, n = 7, sma = TRUE, ema = TRUE, date = TRUE, u = "days"){

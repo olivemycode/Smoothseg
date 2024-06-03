@@ -4,31 +4,33 @@
 #' Users specify the maximum number of changepoints possible and number of sub-intervals in the data.
 #'
 #' @param df A dataframe that will be processed.
-#' @param d Numeric or date vector that will become the x-axis for the final plot.
-#' @param y Numeric response vector that is the same length as d.
+#' @param w Numeric or date vector that will become the x-axis for the final plot.
+#' @param y Numeric response vector that is the same length as w.
 #' @param k Numeric vector containing the max number of automatically-detected changepoints to be predicted.
 #' @param z Method used for detecting number of changepoints in the plot (default set to "bic" but "aic" can be used)
 #' @param g Number of user-specified sub-intervals to examine when searching for changepoints (default set to 1).
-#' @param interest Vector containing any points of interest; these points of interest should be on the same scale as d.
+#' @param interest Vector containing any points of interest; these points of interest should be on the same scale as w.
 #' @param col Color of line to indicate points of interest (default set to "red").
 #' @param linet Type of vertical line to indicate points of interest (default set to "dashed").
 #' @param date Boolean indicating if the points of interest are dates (default set to FALSE).
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 #' @import segmented
 #' @import plotly
 #' @import zoo
 
-predictsegs <- function(df, d, y, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE){
+predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
   }
 
-  x <- as.numeric(d) # Convert variable to numeric
+  x <- as.numeric(w) # Convert variable to numeric
 
-  xname <- gsub(".*\\$", "", deparse(substitute(d))) # Extract variable name from input
+  xname <- gsub(".*\\$", "", deparse(substitute(w))) # Extract variable name from input
 
   yname <- gsub(".*\\$", "", deparse(substitute(y)))
 
@@ -53,7 +55,7 @@ predictsegs <- function(df, d, y, k, z = "bic", g = 1, interest = c(), col = "re
     predstorage[[i]] <- predsegdf # Store dataframes with predictions in list
   }
 
-  predsegplot <- ggplot(predstorage[[1]], aes(x = d, y = y)) + # Initialize plot with original observations
+  predsegplot <- ggplot(predstorage[[1]], aes(x = w, y = y)) + # Initialize plot with original observations
     labs(x = xname, y = yname) +
     geom_point(size = 0.5) +
     geom_vline(xintercept = as.numeric(interest), color = col, linetype = linet) # Add vertical line at point of interest
@@ -62,7 +64,7 @@ predictsegs <- function(df, d, y, k, z = "bic", g = 1, interest = c(), col = "re
 
   for (i in 1:length(predstorage)){ # Create loop to iterate through list for changepoint predictions on plot
 
-    predsegx <- predstorage[[i]][[xname]] # Pull d from list
+    predsegx <- predstorage[[i]][[xname]] # Pull w from list
 
     guess <- predstorage[[i]]$predseg # Pull predictions from list
 

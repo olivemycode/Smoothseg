@@ -1,15 +1,19 @@
-#' multipleseg
+#' fitsegs
 #'
-#' multipleseg plots user prespecified changepoint predictions over the original data and produces an interactive plotly graph.
+#' fitsegs plots user prespecified changepoint predictions over the original data and produces an interactive plotly graph.
 #'
 #' @param df A dataframe that will be processed.
 #' @param w Numeric or date vector that will become the x-axis for the final plot.
-#' @param y Numeric response vector that is the same length as w.
+#' @param y Numeric response vector that is the same length as d.
 #' @param n Numeric vector containing the desired changepoints to be predicted.
-#' @param interest Vector containing any points of interest; these points of interest should be on the same scale as w.
+#' @param interest Vector containing any points of interest; these points of interest should be on the same scale as d.
 #' @param col Color of line to indicate points of interest (default set to "red").
 #' @param linet Type of vertical line to indicate points of interest (default set to "dashed").
 #' @param date Boolean indicating if the points of interest are dates (default set to FALSE).
+#' @param ar Boolean indicating if the model needed is an AR model.
+#' @param p AR order that only applies if ar = TRUE (default set to 1).
+#' @param d Degree of differencing if ar = TRUE (default set to 0).
+#' @param q MA order if ar = TRUE (default set to 0).
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
 #' @import stats
@@ -19,7 +23,7 @@
 #' @import plotly
 #' @import zoo
 
-multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", date = FALSE){
+fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE, p = 1, d = 0, q = 0){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -33,7 +37,19 @@ multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashe
 
   n <- sort(n) # Sort number of changepoints in ascending order
 
-  segfit <- lm(y ~ 1 + x, data = df) # Run linear model using selected variables with an intercept
+  segfit <- lm(y ~ 1 + x, data = df) # Store fitted regression object
+
+  if (ar == TRUE){
+    arimats <- ts(y, start = min(df$Index), end = max(df$Index))
+
+    arimafit <- arima(arimats, order = c(p, d, q))
+
+    residuals_arima <- residuals(arimafit)
+
+    df$residuals <- residuals_arima
+
+    segfit <- lm(residuals ~ x, data = df)
+  }
 
   storage <- list() # Create empty list to store dataframes
 
@@ -57,7 +73,7 @@ multipleseg <- function(df, w, y, n, interest = c(), col = "red", linet = "dashe
 
   for (i in 1:length(storage)){ # Create loop to iterate through list for changepoint predictions on plot
 
-    segx <- storage[[i]][[xname]] # Pull w from list
+    segx <- storage[[i]][[xname]] # Pull d from list
 
     guess <- storage[[i]]$smoothseg # Pull predictions from list
 
