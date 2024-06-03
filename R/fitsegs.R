@@ -43,11 +43,11 @@ fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", 
 
     arimafit <- arima(y, order = c(p, d, q))
 
-    residuals_arima <- residuals(arimafit)
+    fits_arima <- fitted(arimafit)
 
-    df$residuals <- residuals_arima
+    df$fits <- fits_arima
 
-    segfit <- lm(residuals ~ x, data = df)
+    segfit <- lm(fits ~ x, data = df)
   }
 
   storage <- list() # Create empty list to store dataframes
