@@ -2,8 +2,7 @@
 
 export(fitsegs)
 export(kfit)
-export(ma)
-export(multipleseg)
+export(movea)
 export(predictsegs)
 export(qclean)
 export(rescalex)
