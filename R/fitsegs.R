@@ -16,6 +16,7 @@
 #' @param q MA order if ar = TRUE (default set to 0).
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
+#' @import forecast
 #' @import stats
 #' @import dplyr
 #' @import ggplot2
@@ -45,9 +46,9 @@ fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", 
 
     fits_arima <- fitted(arimafit)
 
-    df$fits <- fits_arima
+    print(df$fits)
 
-    segfit <- lm(fits ~ 1 + x, data = df)
+    segfit <- lm(fits ~ x, data = df)
   }
 
   storage <- list() # Create empty list to store dataframes
