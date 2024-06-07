@@ -16,6 +16,7 @@
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
 #' @import stats
+#' @import forecast
 #' @import dplyr
 #' @import ggplot2
 #' @import segmented
