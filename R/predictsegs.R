@@ -51,7 +51,7 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
 
     df$fits <- fits_arima
 
-    predfit <- lm(fits ~ 1 + x, data = df)
+    predfit <- lm(fits ~ x, data = df)
   }
 
   predstorage <- list() # Create empty list to store dataframes
