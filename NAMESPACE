@@ -3,6 +3,7 @@
 export(fitsegs)
 export(kfit)
 export(movea)
+export(myfit)
 export(predictsegs)
 export(qclean)
 export(rescalex)
