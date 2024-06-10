@@ -47,7 +47,7 @@ predictfit <- function(df, w, y, fitobj, k, z = "bic", g = 1, interest = c(), co
 
     df$fits <- fits_arima
 
-    segfit <- lm(fits ~ x, data = df)
+    predfit <- lm(fits ~ x, data = df)
   }
 
   predstorage <- list() # Create empty list to store dataframes
