@@ -47,6 +47,8 @@ fitsegs <- function(df, w, y, n, interest = c(), col = "red", linet = "dashed", 
 
     fits_arima <- fitted(arimafit)
 
+    df$fits <- fits_arima
+
     segfit <- lm(fits ~ x, data = df)
   }
 
