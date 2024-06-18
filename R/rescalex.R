@@ -8,7 +8,9 @@
 #' @param varname The variable name for the rescaled variable (default is "scalex")
 #' @return Returns a dataframe that contains an additional column with the rescaled x variable.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 
 rescalex <- function(df, x, varname = "scalex"){
 

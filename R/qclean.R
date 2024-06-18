@@ -11,7 +11,9 @@
 #' @param date If date is TRUE, converts x variable to POSIXct for numerical analysis (set to TRUE by default).
 #' @return Returns a dataframe that is ordered and aggregated by x with percentiles below a and above b removed.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 #' @import zoo
 
 qclean <- function(df, x, y, a = 0, b = 1, date = TRUE){

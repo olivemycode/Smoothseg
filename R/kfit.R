@@ -11,7 +11,9 @@
 #' "Ep" for Epanechnikov or "Bw" for Biweight are alternative options
 #' @return Returns a dataframe that contains a column with kernel estimates.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 #' @import npmlda
 
 kfit <- function(df, x = Index, y, b = 0.1, w = 1, k = "Nm"){ # b is the bandwidth and w is the weight of observations

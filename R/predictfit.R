@@ -1,11 +1,12 @@
-#' predictsegs
+#' predictfit
 #'
-#' predictsegs automatically detects changepoints in the data and returns an interactive plot with the predicted number of changepoints.
-#' Users specify the maximum number of changepoints possible and number of sub-intervals in the data.
+#' predictfit automatically detects changepoints in the data and returns an interactive plot with the predicted number of changepoints.
+#' Users specify the maximum number of changepoints possible and number of sub-intervals in the data. A fitted object must be entered.
 #'
 #' @param df A dataframe that will be processed.
 #' @param w Numeric or date vector that will become the x-axis for the final plot.
 #' @param y Numeric response vector that is the same length as w.
+#' @param fitobj Fitted object for modeling data.
 #' @param k Numeric vector containing the max number of automatically-detected changepoints to be predicted.
 #' @param z Method used for detecting number of changepoints in the plot (default set to "bic" but "aic" can be used)
 #' @param g Number of user-specified sub-intervals to examine when searching for changepoints (default set to 1).
@@ -14,9 +15,6 @@
 #' @param linet Type of vertical line to indicate points of interest (default set to "dashed").
 #' @param date Boolean indicating if the points of interest are dates (default set to FALSE).
 #' @param ar Boolean indicating if the model needed is an AR model.
-#' @param p AR order that only applies if ar = TRUE (default set to 1).
-#' @param d Degree of differencing if ar = TRUE (default set to 0).
-#' @param q MA order if ar = TRUE (default set to 0).
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
 #' @import stats
@@ -27,7 +25,7 @@
 #' @import plotly
 #' @import zoo
 
-predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE, p = 1, d = 0, q = 0){
+predictfit <- function(df, w, y, fitobj, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -41,13 +39,11 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
 
   k <- sort(k) # Sort max number of changepoints in ascending order
 
-  predfit <- lm(y ~ 1 + x, data = df) # Run linear model using selected variables with an intercept
+  predfit <- fitobj # Run linear model using selected variables with an intercept
 
   if (ar == TRUE){
 
-    arimafit <- arima(y, order = c(p, d, q))
-
-    fits_arima <- fitted(arimafit)
+    fits_arima <- fitted(fitobj) # Create predictions based on fitted arima object
 
     df$fits <- fits_arima
 

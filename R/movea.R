@@ -1,6 +1,6 @@
-#' ma
+#' movea
 #'
-#' ma creates simple moving averages and exponential moving averages based on parameters specified by the user. It can handle date variables.
+#' movea creates simple moving averages and exponential moving averages based on parameters specified by the user. It can handle date variables.
 #'
 #' @param df A dataframe that will be processed.
 #' @param x The variable to average y over.
@@ -14,10 +14,12 @@
 #' @param u Units for the x variable to calculate time interval (set to "days" by default).
 #' @return Returns a dataframe that has columns for simple moving average and exponential moving average based on specified parameters.
 #' @export
-#' @import tidyverse
+#' @import stats
+#' @import dplyr
+#' @import ggplot2
 #' @import zoo
 
-ma <- function(df, x, y, alpha = 1, n = 7, sma = TRUE, ema = TRUE, date = TRUE, u = "days"){
+movea <- function(df, x, y, alpha = 1, n = 7, sma = TRUE, ema = TRUE, date = TRUE, u = "days"){
 
   x <- as.character(substitute(x)) # Convert variable names to characters for later subsetting
 
