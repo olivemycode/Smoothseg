@@ -49,9 +49,7 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
 
     fits_arima <- fitted(arimafit)
 
-    res_arima <- residuals(fitobj)
-
-    df$fits <- fits_arima + res_arima
+    df$fits <- fits_arima
 
     predfit <- lm(fits ~ x, data = df)
   }
