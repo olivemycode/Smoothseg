@@ -45,9 +45,7 @@ predictfit <- function(df, w, y, fitobj, k, z = "bic", g = 1, interest = c(), co
 
     fits_arima <- fitted(fitobj) # Create predictions based on fitted arima object
 
-    res_arima <- residuals(fitobj)
-
-    df$fits <- fits_arima + res_arima
+    df$fits <- fits_arima
 
     predfit <- lm(fits ~ x, data = df)
   }
