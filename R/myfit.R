@@ -43,7 +43,9 @@ myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "das
 
     fits_arima <- fitted(fitobj) # Create predictions based on fitted arima object
 
-    df$fits <- fits_arima
+    res_arima <- residuals(fitobj)
+
+    df$fits <- fits_arima + res_arima
 
     segfit <- lm(fits ~ x, data = df)
   }
