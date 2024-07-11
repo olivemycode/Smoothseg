@@ -4,7 +4,7 @@
 \alias{quantnorm}
 \title{quantnorm}
 \usage{
-quantnorm(df, variable_name)
+quantnorm(df, x)
 }
 \arguments{
 \item{df}{A dataframe that will be processed.}
