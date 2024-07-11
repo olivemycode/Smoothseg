@@ -13,19 +13,15 @@
 
 quantnorm <- function(df, x) {
 
-  data <- as.matrix(df[[x]]) # convert numbers into a matrix
+  x <- as.character(substitute(x)) # Convert variable names to characters for later subsetting
 
-  ranks <- apply(data, 2, rank, ties.method = "min") # find ranks of the data
+  values <- df[[x]]
 
-  sorted_data <- apply(data, 2, sort)
+  rank_values <- rank(values, ties.method = "min")
+  sorted_values <- sort(values)
+  quantiles <- quantile(sorted_values, probs = (rank_values - 1) / (length(values) - 1))
 
-  row_means <- rowMeans(sorted_data) # sort data and get average of each row
+  df[[paste("norm", x)]] <- quantiles[rank_values]
 
-  normalized_data <- matrix(0, nrow = nrow(data), ncol = ncol(data)) # replace value with mean of values of the sma rank
-
-  for (i in 1:ncol(data)) {
-    normalized_data[, i] <- row_means[ranks[, i]]
-  }
-
-  return(normalized_data)
+  return(df)
 }
