@@ -1,7 +1,7 @@
 Package: Smoothseg
 Type: Package
 Title: Generating and Plotting Multiple Changepoint Predictions
-Version: 0.1.2
+Version: 0.1.3
 Author: Oliver Li
 Maintainer: Oliver Li <oli.li@alumni.unc.edu>
 Description: Smoothseg is a package with functions for generating interactive plotly objects for changepoint predictions.
