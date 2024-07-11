@@ -11,23 +11,17 @@
 #' @import dplyr
 
 
-quantnorm <- function(df, variable_name) {
-  # Extract the variable as a matrix
-  x <- as.matrix(df[[variable_name]])
+quantnorm <- function(df, x) {
 
-  # Rank the data and compute the quantiles
-  rank_x <- apply(x, 2, rank, ties.method = "min")
-  sorted_x <- apply(x, 2, sort)
-  mean_quantiles <- rowMeans(sorted_x)
+  x <- as.character(substitute(x)) # Convert variable names to characters for later subsetting
 
-  # Normalize the data
-  normalized_x <- x
-  for (i in 1:ncol(x)) {
-    normalized_x[, i] <- mean_quantiles[rank_x[, i]]
-  }
+  values <- df[[x]]
 
-  # Replace the variable in the dataframe with the quantile-normalized values
-  df[[variable_name]] <- as.numeric(normalized_x)
+  rank_values <- rank(values, ties.method = "min")
+  sorted_values <- sort(values)
+  quantiles <- quantile(sorted_values, probs = (rank_values - 1) / (length(values) - 1))
+
+  df[[paste("norm", x, sep = "")]] <- quantiles[rank_values]
 
   return(df)
 }
