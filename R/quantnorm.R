@@ -27,5 +27,5 @@ quantnorm <- function(df, x) {
     normalized_data[, i] <- row_means[ranks[, i]]
   }
 
-  return(df[[normalized_data]])
+  return(normalized_data)
 }
