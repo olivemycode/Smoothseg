@@ -13,7 +13,7 @@
 
 quantnorm <- function(df, x) {
 
-  data <- as.matrix(df$x) # convert numbers into a matrix
+  data <- as.matrix(df[[x]]) # convert numbers into a matrix
 
   ranks <- apply(data, 2, rank, ties.method = "min") # find ranks of the data
 
@@ -27,5 +27,5 @@ quantnorm <- function(df, x) {
     normalized_data[, i] <- row_means[ranks[, i]]
   }
 
-  return(df$normalized_data)
+  return(df[[normalized_data]])
 }
