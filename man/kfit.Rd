@@ -24,5 +24,5 @@ kfit(df, x = Index, y, b = 0.1, w = 1, k = "Nm")
 Returns a dataframe that contains a column with kernel estimates.
 }
 \description{
-kfit creates a kernel estimate using the Nadaraya-Watson kernel estimator.
+kfit creates a kernel estimate using the Nadaraya-Watson kernel estimator. Other estimators can be used upon specification.
 }

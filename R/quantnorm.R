@@ -15,9 +15,9 @@ quantnorm <- function(df, x) {
 
   x <- as.character(substitute(x)) # Convert variable names to characters for later subsetting
 
-  values <- df[[x]]
+  values <- df[[x]] # Extract values from dataframe
 
-  rank_values <- rank(values, ties.method = "min")
+  rank_values <- rank(values, ties.method = "min") # Create rankjngs for values extracted
 
   sorted_values <- sort(values)
 
