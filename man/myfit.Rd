@@ -14,7 +14,7 @@ myfit(
   col = "red",
   linet = "dashed",
   date = FALSE,
-  ar = FALSE
+  notlm = FALSE
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ myfit(
 
 \item{date}{Boolean indicating if the points of interest are dates (default set to FALSE).}
 
-\item{ar}{Boolean indicating if the model needed is an AR model.}
+\item{notlm}{Boolean indicating if the model needed is a linear model (default set to FALSE).}
 }
 \value{
 Returns a plotly interactive graph that shows the projected changepoint predictions.

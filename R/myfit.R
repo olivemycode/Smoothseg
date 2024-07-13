@@ -12,7 +12,7 @@
 #' @param col Color of line to indicate points of interest (default set to "red").
 #' @param linet Type of vertical line to indicate points of interest (default set to "dashed").
 #' @param date Boolean indicating if the points of interest are dates (default set to FALSE).
-#' @param ar Boolean indicating if the model needed is an AR model.
+#' @param notlm Boolean indicating if the model needed is a linear model (default set to FALSE).
 #' @return Returns a plotly interactive graph that shows the projected changepoint predictions.
 #' @export
 #' @import forecast
@@ -23,7 +23,7 @@
 #' @import plotly
 #' @import zoo
 
-myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE){
+myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "dashed", date = FALSE, notlm = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -39,11 +39,9 @@ myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "das
 
   segfit <- fitobj # Store fitted regression object
 
-  if (ar == TRUE){
+  if (notlm == TRUE){
 
-    fits_arima <- fitted(fitobj) # Create predictions based on fitted arima object
-
-    df$fits <- fits_arima
+    df$fits <- fitted(fitobj) # Create predictions based on fitted arima object
 
     segfit <- lm(fits ~ x, data = df)
   }
