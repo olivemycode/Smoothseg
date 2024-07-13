@@ -19,14 +19,14 @@
 qreg <- function(df, x, y, tau = 0.5, intercept = TRUE) {
 
   if (intercept) {
-    formula <- as.formula(paste(response, "~", paste(predictors, collapse = "+")))
+    f <- as.formula(paste(response, "~", paste(predictors, collapse = "+")))
   }
 
   else {
-    formula <- as.formula(paste(response, "~", paste(predictors, collapse = "+"), "-1"))
+    f <- as.formula(paste(response, "~", paste(predictors, collapse = "+"), "-1"))
   }
 
-  model <- rq(formula, data = df, tau = tau) # Create quantile regression model
+  model <- rq(f, data = df, tau = tau) # Create quantile regression model
 
   return(model)
 }
