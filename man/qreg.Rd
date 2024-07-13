@@ -4,7 +4,7 @@
 \alias{qreg}
 \title{qreg}
 \usage{
-qreg(df, x, y, tau = 0.5)
+qreg(df, x, y, tau = 0.5, intercept = TRUE)
 }
 \arguments{
 \item{df}{A dataframe that will be processed.}
@@ -14,6 +14,8 @@ qreg(df, x, y, tau = 0.5)
 \item{y}{The response variable as a string for quantile regression.}
 
 \item{tau}{The quantile to be estimate (set to 0.5 by default)}
+
+\item{intercept}{Determines if there is an intercept in the model (set to TRUE by default).}
 }
 \value{
 Returns a fitted model.
