@@ -14,7 +14,7 @@
 
 rmvpt <- function(df, x, y) {
 
-  if (!(xvar %in% names(df)) | !(yvar %in% names(df))) { # Warning if columns selected are not in the dataframe
+  if (!(x %in% names(df)) | !(y %in% names(df))) { # Warning if columns selected are not in the dataframe
     stop("Specified columns not found in the dataframe")
   }
 
@@ -33,9 +33,9 @@ rmvpt <- function(df, x, y) {
         current_data <- df[selected_points(), ]
 
         # Create the plot
-        p <- ggplot(current_data, aes_string(x = xvar, y = yvar)) +
+        p <- ggplot(current_data, aes_string(x = x, y = y)) +
           geom_point() +
-          labs(title = "Click on points to deselect them", x = xvar, y = yvar)
+          labs(title = "Click on points to deselect them", x = x, y = y)
 
         ggplotly(p) %>%
           layout(dragmode = "select") %>%
@@ -52,7 +52,7 @@ rmvpt <- function(df, x, y) {
           clicked_y <- click_data$y
 
           # Find the index of the clicked point in the original dataframe
-          index <- which(df[[xvar]] == clicked_x & df[[yvar]] == clicked_y)
+          index <- which(df[[x]] == clicked_x & df[[y]] == clicked_y)
 
           # Deselect the clicked point
           current_selected[index] <- FALSE
