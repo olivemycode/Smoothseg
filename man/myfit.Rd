@@ -14,7 +14,8 @@ myfit(
   col = "red",
   linet = "dashed",
   date = FALSE,
-  notlm = FALSE
+  notlm = FALSE,
+  q = FALSE
 )
 }
 \arguments{

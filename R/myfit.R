@@ -23,7 +23,7 @@
 #' @import plotly
 #' @import zoo
 
-myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "dashed", date = FALSE, notlm = FALSE){
+myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "dashed", date = FALSE, notlm = FALSE, q = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -50,7 +50,7 @@ myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "das
 
   for (i in 1:length(n)){
 
-    smoothseg <- segmented(segfit, seg.Z = ~ x, npsi = n[[i]]) # Use segmented function to find n changepoints
+    smoothseg <- segmented(segfit, seg.Z = ~ x, npsi = n[[i]], control = seg.control(quant = q)) # Use segmented function to find n changepoints
 
     seg.predict <- cbind(na.omit(df), predict(smoothseg)) # Combine non-missing values with predictions
 
