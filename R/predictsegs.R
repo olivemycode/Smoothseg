@@ -45,7 +45,7 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
 
   if (ar == TRUE){
 
-    arimafit <- arima(y, order = c(p, d, q))
+    arimafit <- auto.arima(y, order = c(p, d, q))
 
     fits_arima <- fitted(arimafit)
 

@@ -41,7 +41,7 @@ myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "das
 
   if (notlm == TRUE){
 
-    df$fits <- fitted(fitobj) # Create predictions based on fitted arima object
+    df$fits <- fitted(fitobj) # Create predictions based on fitted model
 
     segfit <- lm(fits ~ x, data = df)
   }
