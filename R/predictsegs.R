@@ -45,13 +45,13 @@ predictsegs <- function(df, w, y, k, z = "bic", g = 1, interest = c(), col = "re
 
   if (ar == TRUE){
 
-    arimafit <- auto.arima(y, order = c(p, d, q))
+    arimafit <- arima(y, order = c(p, d, q)) # Fit an arima model to the data
 
-    fits_arima <- fitted(arimafit)
+    fits_arima <- fitted(arimafit) # Use the fitted model to create fitted predictions
 
-    df$fits <- fits_arima
+    df$fits <- fits_arima # Store the fitted predictions in a new variable in the dataframe
 
-    predfit <- lm(fits ~ x, data = df)
+    predfit <- lm(fits ~ x, data = df) # Model the new observations using a linear model
   }
 
   predstorage <- list() # Create empty list to store dataframes
