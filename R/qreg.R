@@ -26,7 +26,22 @@ qreg <- function(df, x, y, tau = 0.5, intercept = TRUE) {
     f <- as.formula(paste(y, "~", paste(x, collapse = "+"), "-1"))
   }
 
+
+  vcov.rq <- function(x,...) { # Create variance-covariance matrix
+
+    V <- summary(x,cov = TRUE,se = "nid",...)$cov
+
+    rownames(V) <- colnames(V) <- names(x$coef)
+
+    V
+  }
+
+
   model <- rq(f, data = df, tau = tau) # Create quantile regression model
+
+  segdef <- segmented.default(model, ~x)
+
+  plot.segmented(segdef, res = TRUE, col = 2, conf.level = 0.95)
 
   return(model)
 }
