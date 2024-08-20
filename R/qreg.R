@@ -16,7 +16,7 @@
 
 
 
-qreg <- function(df, x, y, tau = 0.5, intercept = TRUE) {
+qreg <- function(df, x, y, tau = 0.5, intercept = TRUE, m = "fn") {
 
   if (intercept) {
     f <- as.formula(paste(y, "~", paste(x, collapse = "+")))
@@ -37,11 +37,7 @@ qreg <- function(df, x, y, tau = 0.5, intercept = TRUE) {
   }
 
 
-  model <- rq(f, data = df, tau = tau) # Create quantile regression model
-
-  segdef <- segmented.default(model, ~x)
-
-  plot.segmented(segdef, res = TRUE, col = 2, conf.level = 0.95)
+  model <- rq(f, data = df, tau = tau, method = m) # Create quantile regression model
 
   return(model)
 }
