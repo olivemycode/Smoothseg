@@ -4,7 +4,7 @@
 \alias{qreg}
 \title{qreg}
 \usage{
-qreg(df, x, y, tau = 0.5, intercept = TRUE)
+qreg(df, x, y, tau = 0.5, intercept = TRUE, m = "fn")
 }
 \arguments{
 \item{df}{A dataframe that will be processed.}
