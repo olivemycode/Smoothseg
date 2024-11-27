@@ -10,6 +10,7 @@ myfit(
   y,
   fitobj,
   n,
+  mobs = 2,
   interest = c(),
   col = "red",
   linet = "dashed",
@@ -27,6 +28,8 @@ myfit(
 \item{fitobj}{Fitted object for modeling data.}
 
 \item{n}{Numeric vector containing the desired changepoints to be predicted.}
+
+\item{mobs}{Minimum number of observations between changepoints.}
 
 \item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as d.}
 

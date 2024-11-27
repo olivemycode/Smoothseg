@@ -8,6 +8,7 @@
 #' @param y Numeric response vector that is the same length as d.
 #' @param fitobj Fitted object for modeling data.
 #' @param n Numeric vector containing the desired changepoints to be predicted.
+#' @param mobs Minimum number of observations between changepoints.
 #' @param interest Vector containing any points of interest; these points of interest should be on the same scale as d.
 #' @param col Color of line to indicate points of interest (default set to "red").
 #' @param linet Type of vertical line to indicate points of interest (default set to "dashed").
@@ -19,11 +20,11 @@
 #' @import stats
 #' @import dplyr
 #' @import ggplot2
-#' @import segmented
+#' @import segmented1
 #' @import plotly
 #' @import zoo
 
-myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "dashed", date = FALSE, notlm = FALSE){
+myfit <- function(df, w, y, fitobj, n, mobs = NULL, interest = c(), col = "red", linet = "dashed", date = FALSE, notlm = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -50,7 +51,7 @@ myfit <- function(df, w, y, fitobj, n, interest = c(), col = "red", linet = "das
 
   for (i in 1:length(n)){
 
-    smoothseg <- segmented(segfit, seg.Z = ~ x, npsi = n[[i]]) # Use segmented function to find n changepoints
+    smoothseg <- segmented1::segmented(segfit, seg.Z = ~ x, npsi = n[[i]], min_obs = mobs) # Use segmented function to find n changepoints
 
     seg.predict <- cbind(na.omit(df), predict(smoothseg)) # Combine non-missing values with predictions
 

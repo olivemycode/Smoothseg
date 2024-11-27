@@ -8,6 +8,7 @@
 #' @param y Numeric response vector that is the same length as w.
 #' @param fitobj Fitted object for modeling data.
 #' @param k Numeric vector containing the max number of automatically-detected changepoints to be predicted.
+#' @param mobs Minimum number of observations between detected changepoints.
 #' @param z Method used for detecting number of changepoints in the plot (default set to "bic" but "aic" can be used)
 #' @param g Number of user-specified sub-intervals to examine when searching for changepoints (default set to 1).
 #' @param interest Vector containing any points of interest; these points of interest should be on the same scale as w.
@@ -25,7 +26,7 @@
 #' @import plotly
 #' @import zoo
 
-predictfit <- function(df, w, y, fitobj, k, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE){
+predictfit <- function(df, w, y, fitobj, k, mobs = NULL, z = "bic", g = 1, interest = c(), col = "red", linet = "dashed", date = FALSE, ar = FALSE){
 
   if (date == TRUE){
     interest <- as.Date(interest, format = "%m/%d/%Y") # Convert points of interest into a date if specified to be a date
@@ -56,7 +57,7 @@ predictfit <- function(df, w, y, fitobj, k, z = "bic", g = 1, interest = c(), co
 
   for (i in 1:length(k)){
 
-    predseg <- selgmented(predfit, seg.Z = ~ x, Kmax = k[i], type = z, G = g) # Use selgmented function to predict changepoints with max k
+    predseg <- selgmented(predfit, seg.Z = ~ x, Kmax = k[i], type = z, th = mobs, G = g) # Use selgmented function to predict changepoints with max k
 
     changepoints[i] <- (length(predseg$coefficients) - 2) / 2 # Calculate number of changepoints in the model for plotting
 

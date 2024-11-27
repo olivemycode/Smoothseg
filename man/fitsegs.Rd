@@ -9,6 +9,7 @@ fitsegs(
   w,
   y,
   n,
+  mobs = 2,
   interest = c(),
   col = "red",
   linet = "dashed",
