@@ -9,7 +9,7 @@ fitsegs(
   w,
   y,
   n,
-  mobs = 2,
+  mobs = NULL,
   interest = c(),
   col = "red",
   linet = "dashed",
@@ -28,6 +28,8 @@ fitsegs(
 \item{y}{Numeric response vector that is the same length as d.}
 
 \item{n}{Numeric vector containing the desired changepoints to be predicted.}
+
+\item{mobs}{Minimum number of observations between changepoints.}
 
 \item{interest}{Vector containing any points of interest; these points of interest should be on the same scale as d.}
 

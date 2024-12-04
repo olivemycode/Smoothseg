@@ -22,7 +22,6 @@
 #' @import forecast
 #' @import dplyr
 #' @import ggplot2
-#' @import segmented
 #' @import plotly
 #' @import zoo
 
@@ -57,7 +56,7 @@ predictfit <- function(df, w, y, fitobj, k, mobs = NULL, z = "bic", g = 1, inter
 
   for (i in 1:length(k)){
 
-    predseg <- selgmented(predfit, seg.Z = ~ x, Kmax = k[i], type = z, th = mobs, G = g) # Use selgmented function to predict changepoints with max k
+    predseg <- solgmented(predfit, seg.Z = ~ x, Kmax = k[i], type = z, th = mobs, G = g) # Use selgmented function to predict changepoints with max k
 
     changepoints[i] <- (length(predseg$coefficients) - 2) / 2 # Calculate number of changepoints in the model for plotting
 

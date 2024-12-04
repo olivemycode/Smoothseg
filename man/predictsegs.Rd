@@ -10,6 +10,7 @@ predictsegs(
   y,
   k,
   z = "bic",
+  mobs = NULL,
   g = 1,
   interest = c(),
   col = "red",
@@ -31,6 +32,8 @@ predictsegs(
 \item{k}{Numeric vector containing the max number of automatically-detected changepoints to be predicted.}
 
 \item{z}{Method used for detecting number of changepoints in the plot (default set to "bic" but "aic" can be used)}
+
+\item{mobs}{Minimum number of observations between detected changepoints.}
 
 \item{g}{Number of user-specified sub-intervals to examine when searching for changepoints (default set to 1).}
 

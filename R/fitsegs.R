@@ -22,7 +22,6 @@
 #' @import stats
 #' @import dplyr
 #' @import ggplot2
-#' @import segmented1
 #' @import plotly
 #' @import zoo
 
@@ -57,7 +56,7 @@ fitsegs <- function(df, w, y, n, mobs = NULL, interest = c(), col = "red", linet
 
   for (i in 1:length(n)){
 
-    smoothseg <- segmented1::segmented(segfit, seg.Z = ~ x, npsi = n[[i]], min_obs = mobs) # Use segmented function to find n changepoints
+    smoothseg <- segmented(segfit, seg.Z = ~ x, npsi = n[[i]], min_obs = mobs) # Use segmented function to find n changepoints
 
     seg.predict <- cbind(na.omit(df), predict(smoothseg)) # Combine non-missing values with predictions
 

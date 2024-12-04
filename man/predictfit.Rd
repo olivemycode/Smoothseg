@@ -10,6 +10,7 @@ predictfit(
   y,
   fitobj,
   k,
+  mobs = NULL,
   z = "bic",
   g = 1,
   interest = c(),
@@ -29,6 +30,8 @@ predictfit(
 \item{fitobj}{Fitted object for modeling data.}
 
 \item{k}{Numeric vector containing the max number of automatically-detected changepoints to be predicted.}
+
+\item{mobs}{Minimum number of observations between detected changepoints.}
 
 \item{z}{Method used for detecting number of changepoints in the plot (default set to "bic" but "aic" can be used)}
 

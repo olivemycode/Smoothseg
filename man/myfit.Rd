@@ -10,7 +10,7 @@ myfit(
   y,
   fitobj,
   n,
-  mobs = 2,
+  mobs = NULL,
   interest = c(),
   col = "red",
   linet = "dashed",
