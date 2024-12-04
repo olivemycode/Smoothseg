@@ -15,8 +15,6 @@ Imports:
     ggplot2,
     npmlda,
     plotly,
-    segmented,
-    segmented1,
     stats,
     tidyr,
     zoo
