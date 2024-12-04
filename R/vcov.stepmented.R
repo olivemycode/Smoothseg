@@ -1,3 +1,4 @@
+#' @export
 vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   #farlo su scala logit???
   #k=-1/2.. conservativi
@@ -15,8 +16,8 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   # I2<-var(U.pert)
   # s2<-sum(o$residuals^2)/(n-p)
   # r<-list(teor= s2*crossprod(X), emp=crossprod(U), ef=I1,pert=I2)
-  
-  
+
+
   # var.Tay<-function(est1,est2,v1,v2,v12){
   #   r<- est1/est2
   #   vv<-(v1+v2*r^2-2*r*v12)/est2^2
@@ -29,7 +30,7 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   # nomiVxb <- object$nameUV$V
   # nomiVxb<-gsub("V","psi",nomiVxb)
   # #browser()
-  # 
+  #
   # if(!inherits(object, "lm")) stop(" A (g)lm object fit is requested")
   # if(inherits(object, "glm")){
   #   Cov<- chol2inv(object$obj.ok$qr$qr) #per GLM ma manca la dispersion..
@@ -64,8 +65,8 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   #   r<-sum(w*(y-mu)^2)/2
   #   r
   # }
-  
- 
+
+
   X0<-X<-model.matrix.stepmented(object) #qr.X(object$qr) piu efficiente?
   p=ncol(X)
   n=nrow(X)
@@ -74,7 +75,7 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   nomiU<- object$nameUV$U
   nomiPsi<- gsub("V","psi", nomiV)
   id.noV<-setdiff(colnames(X), nomiPsi)
-  
+
   #browser()
   #Xlin<-X[,setdiff(colnames(X),c(nomiU, nomiPsi))]
   #Hess<-optimHess(object$coefficients, fOb, Xlin=Xlin, Z=object$Z)
@@ -111,11 +112,11 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
       variance = object$family$variance
       linkinv = object$family$linkinv
       mu.eta = object$family$mu.eta
-      
+
       eta <- object$linear.predictors
       prior.weights=object$prior.weights
-      
-      mu = linkinv(eta) 
+
+      mu = linkinv(eta)
       varg = variance(mu)
       invgprime = mu.eta(eta)
       ww<- prior.weights*(invgprime^2/varg) #object$prior.weights*object$weights
@@ -184,10 +185,10 @@ vcov.stepmented<-function(object, k=NULL, return.X=FALSE, zero.cor=TRUE, ...){
   #browser()
   V[id.noV,id.noV]<-V0
   if(zero.cor) V[nomiPsi, id.noV]<- V[id.noV, nomiPsi] <-0
-  V 
+  V
 }
 
 
-  
+
 
 

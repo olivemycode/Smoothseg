@@ -1,3 +1,4 @@
+#' @export
 `print.stepmented` <- function(x, digits = max(3, getOption("digits") - 3),...){
 #17/11/21!!! :))
         if(is.null(x$psi)) x<-x[[length(x)]]
@@ -6,13 +7,13 @@
         cat( "Call: " )
         print( x$call )
         cat("\nCoefficients of the linear terms:\n")
-        
+
         #iV<- -match(x$nameUV[[2]],names(coef(x)))#iV<- -grep("psi.",names(coef(x)))#indices all but V
         iV<- -match(gsub("V", "psi", x$nameUV[[2]]),names(coef(x)))#iV<- -grep("psi.",names(coef(x)))#indices all but V
         print.default(format(x$coef[iV], digits = digits), print.gap = 2, quote = FALSE)
         cat("\n")
         cat("Estimated Jump-Point(s):\n")
-        #a<-as.vector(x$psi[,"Est."]) 
+        #a<-as.vector(x$psi[,"Est."])
         a<- as.vector(x$psi.rounded["inf [",])
         names(a)<-colnames(x$psi.rounded)
         print.default(a, digits+2, print.gap=2)

@@ -1,13 +1,14 @@
-lines.stepmented<-function(x, term, bottom=TRUE, shift=FALSE, conf.level=0.95, k=50, 
+#' @export
+lines.stepmented<-function(x, term, bottom=TRUE, shift=FALSE, conf.level=0.95, k=50,
   pch=18, .vcov=NULL, .coef=NULL,...){
   if(missing(term)){
     if(length(x$nameUV$Z)>1 ) {
       stop("please, specify `term'")
     } else {
-      term<- x$nameUV$Z  
+      term<- x$nameUV$Z
         }
   } else {
-    if(is.numeric(term)) term<-x$nameUV$Z[term] 
+    if(is.numeric(term)) term<-x$nameUV$Z[term]
   }
   if(!term%in%x$nameUV$Z) stop(" unknown 'term' ")
   ss<-list(...)

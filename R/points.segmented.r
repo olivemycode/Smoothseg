@@ -1,4 +1,5 @@
-points.segmented <-function(x, term, interc=TRUE, link=TRUE, 
+#' @export
+points.segmented <-function(x, term, interc=TRUE, link=TRUE,
     rev.sgn=FALSE, transf=I, .vcov=NULL, .coef=NULL, const=0, v=TRUE, ...){
 #--------------
       f.U<-function(nomiU, term=NULL){
@@ -36,7 +37,7 @@ points.segmented <-function(x, term, interc=TRUE, link=TRUE,
       opz$y<-broken.line(x,d, se.fit=FALSE, interc=interc, link=link, .coef=.coef, .vcov=.vcov)[[1]]
       #browser()
       if(rev.sgn) psii<- -psii
-      opz$x<- psii 
+      opz$x<- psii
       if(is.null(opz$cex)) opz$cex<-1.25
       if(is.null(opz$lwd)) opz$lwd<-1.6
       opz$y <- opz$y + const
@@ -46,7 +47,6 @@ points.segmented <-function(x, term, interc=TRUE, link=TRUE,
       invisible(NULL)
       }
 
-      
-      
 
-      
+
+

@@ -1,15 +1,16 @@
+#' @export
 fitted.segmented.lme<-function(object, level=1, sort=TRUE, ...){
-  #fit: an object of class "segmented.lme" 
+  #fit: an object of class "segmented.lme"
   #What about "fitted(oo$lme.fit.noG)" or "fitted(obj,level=1)+fit$Off"?
-  #fitted(fitG,level=1)+fit$Off e' proprio uguale a fitted(fit.noG, level=1)  
+  #fitted(fitG,level=1)+fit$Off e' proprio uguale a fitted(fit.noG, level=1)
   #comunque per level=0 (population parameter) l'identita' non vale, ed e' necessario fare i calcoli
   #   "manualmente"
   #obj<- object[[1]] #sarebbe fit$lme.fit
   levelC<- min(level,1) #valori >1 sono riportati ad 1
   levelC<-deparse(levelC)
-  
+
   #browser()
-  
+
   switch(levelC,
          "0"={
            #leftSlope<- if(object$namesGZ$nameZ %in% names(fixef(object[[2]]))) fixef(object[[2]])[object$namesGZ$nameZ] else 0
@@ -28,7 +29,7 @@ fitted.segmented.lme<-function(object, level=1, sort=TRUE, ...){
              r[[id]]<-mu
            }
            mu<-unlist(r)
-           names(mu) <- names(object$Z)               
+           names(mu) <- names(object$Z)
            #                mu<-fitted(obj,level=0) + fit$Off
            #                if("G0"%in%names(ranef(obj))){
            #                  ni<-tapply(obj$groups[,1], obj$groups[,1], length)

@@ -1,3 +1,4 @@
+#' @export
 `segmented.glm` <-
 function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model = TRUE, keep.class=FALSE, min_obs = min_obs, ...) {
   #########====================END  SE PSI FIXED
@@ -29,20 +30,20 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
   if("V" %in% sub("V[1-9]*[0-9]","V", c(all.vars(seg.Z), all.vars(formula(obj) )[-1]))) stop("variable names 'V', 'V1', .. are not allowed")
   if("U" %in% sub("U[1-9]*[0-9]","U", c(all.vars(seg.Z), all.vars(formula(obj) )[-1]))) stop("variable names 'U', 'U1', .. are not allowed")
   if(any(c("$","[") %in% all.names(seg.Z))) stop(" '$' or '[' not allowed in 'seg.Z' ")
-  if(missing(psi)) { 
+  if(missing(psi)) {
     if(n.Seg==1){
       if(missing(npsi)) npsi<-1
       npsi<-lapply(npsi, function(.x).x)
-      if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match") 
+      if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match")
       names(npsi)<-all.vars(seg.Z)
     } else {#se n.Seg>1
-      #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE) 
+      #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE)
       if (missing(npsi)) {
         npsi<-rep(1, n.Seg)
         names(npsi)<-all.vars(seg.Z)
       }
       if(length(npsi)!=n.Seg) stop(" 'npsi' and seg.Z should have the same length")
-      if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")    
+      if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")
     }
     psi<-lapply(npsi, function(.x) rep(NA,.x))
     id.npsi<-TRUE ##id.npsi<-FALSE #e' stato fornito npsi?
@@ -63,7 +64,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     digits<-control$digits
     toll <- control$toll
     if(toll<0) stop("Negative tolerance ('tol' in seg.control()) is meaningless", call. = FALSE)
-    
+
     stop.if.error<-control$stop.if.error
     fix.npsi<-fix.npsi<-control$fix.npsi
     if(!is.null(stop.if.error)) {#if the old "stop.if.error" has been used..
@@ -106,25 +107,25 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(class(mf$formula)[1]=="name" && !"~"%in%paste(mf$formula)) mf$formula<-eval(mf$formula)
     mfExt<- mf
     mf$formula<-update.formula(mf$formula,paste(seg.Z,collapse=".+"))
-    if(!is.null(obj$call$offset) || !is.null(obj$call$weights) || !is.null(obj$call$subset)){ 
-      mfExt$formula <- 
-        update.formula(mf$formula, 
+    if(!is.null(obj$call$offset) || !is.null(obj$call$weights) || !is.null(obj$call$subset)){
+      mfExt$formula <-
+        update.formula(mf$formula,
                        paste(".~.+", paste(
-                         c(all.vars(obj$call$offset), 
+                         c(all.vars(obj$call$offset),
                            all.vars(obj$call$weights),
-                           all.vars(obj$call$subset)), 
+                           all.vars(obj$call$subset)),
                          collapse = "+")
                        ))
     }
     #browser()
-    mf <-  eval(mf, parent.frame()) 
+    mf <-  eval(mf, parent.frame())
     #mf <-  eval(mf, parent.frame(max(1,sys.parent())))
     n<-nrow(mf)
     #La linea sotto serve per inserire in mfExt le eventuali variabili contenute nella formula con offset(..)
     #   o anche variabili che rientrano in espressioni (ad es., y/n o I(y*n))
     nomiOff<-setdiff(all.vars(formula(obj)), names(mf))
     if(length(nomiOff)>=1) mfExt$formula<-update.formula(mfExt$formula,paste(".~.+", paste( nomiOff, collapse="+"), sep=""))
-    
+
     #ago 2014 c'e' la questione di variabili aggiuntive...
     nomiTUTTI<-all.vars(mfExt$formula) #comprende anche altri nomi (ad es., threshold) "variabili"
     nomiNO<-NULL #dovrebbe contenere
@@ -132,41 +133,41 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       r<-try(eval(parse(text=i), parent.frame()), silent=TRUE) # parent.frame(max(1,sys.parent())))
       if(class(r)[1]!="try-error" && length(r)==1 && !is.function(r) && !i%in%names(mf)) nomiNO[[length(nomiNO)+1]]<-i
     }
-    #nomiNO dovrebbe contenere i nomi delle "altre variabili" (come th in subset=x<th) 
+    #nomiNO dovrebbe contenere i nomi delle "altre variabili" (come th in subset=x<th)
     if(!is.null(nomiNO)) mfExt$formula<-update.formula(mfExt$formula,paste(".~.-", paste( nomiNO, collapse="-"), sep=""))
-    
-    
+
+
     mfExt<-eval(mfExt, parent.frame()) #mfExt<-eval(mfExt, parent.frame(max(1,sys.parent())))
     #id.offs<-pmatch("offset",names(mf)) #questa identifica il nome offset(..). ELiminarlo dal dataframe? non conviene
     #       altrimenti nel model.frame non risulta l'offset
-    
+
     #mantieni in mfExt solo le variabili che NON ci sono in mf (cosi la funzione occupa meno spazio..)
     #mfExt<-mfExt[,setdiff(names(mfExt), names(mf)),drop=FALSE]
-    
+
     weights <- as.vector(model.weights(mf))
     offs <- as.vector(model.offset(mf))
     mt <- attr(mf, "terms")
     interc<-attr(mt,"intercept")
     y <- model.response(mf, "any")
     XREG <- if (!is.empty.model(mt)) model.matrix(mt, mf, obj$contrasts)
-    
-    #il cambio in mf da "offset(_nomevar_)" al "_nomevar_" deve avvenire dopo "model.matrix(mt, mf, contrasts)" 
+
+    #il cambio in mf da "offset(_nomevar_)" al "_nomevar_" deve avvenire dopo "model.matrix(mt, mf, contrasts)"
     #    if(!is.null(offs)){
     #      #id.offs<-pmatch("offset",names(mf)) #questa identifica il nome offset(..). ELiminarlo dal dataframe? non conviene altrimenti nel model.frame non risulta l'offset
     #      id.offs<- which(grepl("(offset)", names(mf))) #per consentire anche offset come argomento di glm()
     #      names(mf)[id.offs]<- all.vars(formula(paste("~", names(mf)[id.offs])), functions=FALSE)
     #      }
-    
+
     namesXREG0<-colnames(XREG)
     #nameLeftSlopeZero<-setdiff(all.vars(seg.Z), all.vars(formula(obj)))
     nameLeftSlopeZero<-setdiff(all.vars(seg.Z), names(coef(obj))) #in questo modo riconosce che sin(x*pi) NON e' x, ad esempio.
     namesXREG0<-setdiff(namesXREG0, nameLeftSlopeZero)
-    
+
     #dalla 0.3.0-1 eliminati i seguenti (tanto il modello viene stimato su mfExt)
     #nomeRispo<-strsplit(paste(formula(obj))[2],"/")[[1]] #eventuali doppi nomi separati da "/" (tipo "y/n" per GLM binom)
     #nomeRispo<-strsplit(paste(formula(obj))[2],"/")[[1]] #portato sopra
     #if(length(nomeRispo)>=2) mf[nomeRispo[1]]<-weights*y
-    
+
     id.duplic<-match(all.vars(formula(obj)),all.vars(seg.Z),nomatch=0)>0
     if(any(id.duplic)) {
       #new.mf<-mf[,id.duplic,drop=FALSE]
@@ -214,7 +215,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       if(!(names(fixed.psi) %in% all.vars(seg.Z))) stop("names(fixed.psi) is not a subset of variables in 'seg.Z' ")
     } else {
       stop(" 'fixed.psi' has to be a named list ")
-      } 
+      }
     fixed.psi<-lapply(fixed.psi, sort)
     Zfixed<-matrix(unlist(mapply(function(x,y)rep(x,y),Z[names(fixed.psi)], sapply(fixed.psi, length), SIMPLIFY = TRUE)), nrow=n)
     n.fixed.psi<-sapply(fixed.psi, length)
@@ -255,7 +256,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
         for(i in 1:ncol(U)) mfExt[nomiU[i]]<-mf[nomiU[i]]<-U[,i]
         Fo <- update.formula(formula(obj), as.formula(paste(".~.+", paste(nomiU, collapse = "+"))))
         #obj <- update(obj, formula = Fo, data = KK)
-        
+
         obj <- update(obj, formula = Fo, data = mfExt, evaluate=FALSE)
         if(!is.null(obj[["subset"]])) obj[["subset"]]<-NULL
         obj<-eval(obj, envir=mfExt)
@@ -277,10 +278,10 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     opz<-list(toll=toll, h=h, stop.if.error=stop.if.error, dev0=dev0, visual=visual, it.max=it.max, nomiOK=nomiOK,
         fam=fam, eta0=obj$linear.predictors, maxit.glm=maxit.glm, id.psi.group=id.psi.group, gap=gap,
         conv.psi=conv.psi, alpha=alpha, fix.npsi=fix.npsi, min.step=min.step,
-        pow=pow, visualBoot=visualBoot, digits=digits, fc=fc, seed=control$seed)   
+        pow=pow, visualBoot=visualBoot, digits=digits, fc=fc, seed=control$seed)
 
     #browser()
-    
+
     if(n.boot<=0){
       obj<-seg.glm.fit(y, XREG, Z, PSI, weights, offs, opz, min_obs = min_obs)
     } else {
@@ -312,7 +313,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
 # #            || any(table(sumV)<=1))) stop("only 1 datum in an interval: breakpoint(s) at the boundary or too close each other")
 #        if(any(table(sumV)<=1) && stop.if.error) stop("only 1 datum in an interval: breakpoint(s) at the boundary or too close each other")
 #         }
-    rangeZ<-obj$rangeZ 
+    rangeZ<-obj$rangeZ
     obj<-obj$obj
     beta.c <- coef(obj)[paste("U", 1:ncol(U), sep = "")]
     Vxb <- V %*% diag(beta.c, ncol = length(beta.c))
@@ -330,18 +331,18 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     forma.nomiVxb<-function(xx,yy)paste("psi",1:xx, ".", yy, sep="")
     nomiU   <- unlist(mapply(forma.nomiU, length.psi, nomiFINALI)) #invece di un ciclo #paste("U",1:length.psi[i], ".", name.Z[i])
     nomiVxb <- unlist(mapply(forma.nomiVxb, length.psi, nomiFINALI))
-    
+
     #########========================= SE PSI FIXED
     psi.list<-vector("list", length=length(unique(nomiZ)))
     names(psi.list)<-unique(nomiZ)
-    #names(psi)<-nomiZ #se e' una procedure automatica nomiZ puo' essere piu lungo dei breakpoints "rimasti" 
+    #names(psi)<-nomiZ #se e' una procedure automatica nomiZ puo' essere piu lungo dei breakpoints "rimasti"
     names(psi)<-rep(nomiFINALI, length.psi)
     for(i in names(psi.list)){
       psi.list[[i]]<-psi[names(psi)==i]
     }
     ########===================================
-    
-    #se nomiOK sopra contiene gia' le U1.x,ecc... perche' non fare?nomiVxb<-sub("U","psi", nomiOK) 
+
+    #se nomiOK sopra contiene gia' le U1.x,ecc... perche' non fare?nomiVxb<-sub("U","psi", nomiOK)
     #mf<-cbind(mf, mfExt)
     for(i in 1:ncol(U)) {
         mfExt[nomiU[i]]<-mf[nomiU[i]]<-U[,i]
@@ -358,7 +359,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       for(i in 1:ncol(fixedU)) mfExt[colnames(fixedU)[i]]<-mf[colnames(fixedU)[i]]<-fixedU[,i]
       Fo<-update.formula(Fo, paste(c("~.",colnames(fixedU)), collapse="+"))
     }
-    
+
     #la seguente linea si potrebbe rimuovere perche' in mfExt c'e' gia' tutto..
     if(is.matrix(y)&& (fam$family=="binomial" || fam$family=="quasibinomial")){
               mfExt<-cbind(mfExt[[1]], mfExt[,-1])
@@ -367,7 +368,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(!is.null(objF[["subset"]])) objF[["subset"]]<-NULL
     objF<-eval(objF, envir=mfExt)
     #C'e' un problema..controlla obj (ha due "(Intercepts)" - bhu.. al 27/03/14 non mi sembra!
-    #Puo' capitare che psi sia ai margini e ci sono 1 o 2 osservazioni in qualche intervallo. Oppure ce ne 
+    #Puo' capitare che psi sia ai margini e ci sono 1 o 2 osservazioni in qualche intervallo. Oppure ce ne
     #   sono di piu' ma hanno gli stessi valori di x
     objF$offset<- obj0$offset
     isNAcoef<-any(is.na(objF$coefficients))
@@ -376,14 +377,14 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(isNAcoef){
       if(stop.if.error) {
         cat("breakpoint estimate(s):", as.vector(psi),"\n")
-        stop("at least one coef is NA: breakpoint(s) at the boundary? (possibly with many x-values replicated)", 
+        stop("at least one coef is NA: breakpoint(s) at the boundary? (possibly with many x-values replicated)",
           call. = FALSE)} else {
         warning("some estimate is NA: too many breakpoints? 'var(hat.psi)' cannot be computed \n ..returning a 'lm' model", call. = FALSE)
         Fo <- update.formula(formula(obj0), as.formula(paste(".~.+", paste(nomiU, collapse = "+"))))
         objF <- update(obj0, formula = Fo,  evaluate=TRUE, data = mfExt)
         names(psi)<-nomiVxb
         objF$psi<-psi
-        return(objF)      
+        return(objF)
         }
     }
 
@@ -393,8 +394,8 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
 #------>>>
     if(!gap){
         names.coef<-names(objF$coefficients)
-        names(obj$coefficients)[match(c(paste("U",1:k, sep=""), paste("V",1:k, sep="")), names(coef(obj)))]<- nnomi  
-        objF$coefficients[names.coef]<-obj$coefficients[names.coef] #sostituisce gli 0 
+        names(obj$coefficients)[match(c(paste("U",1:k, sep=""), paste("V",1:k, sep="")), names(coef(obj)))]<- nnomi
+        objF$coefficients[names.coef]<-obj$coefficients[names.coef] #sostituisce gli 0
         objF$fitted.values<-obj$fitted.values
         objF$linear.predictors<-obj$linear.predictors
         objF$residuals<-obj$residuals
@@ -402,7 +403,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
         objF$aic<-obj$aic + 2*ncol(Z) #k
         objF$weights<-obj$weights
     }
-    
+
     Cov <- vcov(objF)
     id <- match(nomiVxb, names(coef(objF)))
     vv <- if (length(id) == 1) Cov[id, id] else diag(Cov[id, id])
@@ -446,7 +447,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     class(objF) <- c("segmented", class(obj0))
     list.obj[[length(list.obj) + 1]] <- objF
     class(list.obj) <- "segmented"
-    if (last) 
+    if (last)
         list.obj <- list.obj[[length(list.obj)]]
     return(list.obj)
 }

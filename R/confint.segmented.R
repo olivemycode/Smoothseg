@@ -1,31 +1,32 @@
-`confint.segmented` <- function(object, parm, level=0.95, method=c("delta", "score", "gradient"), rev.sgn=FALSE, 
+#' @export
+`confint.segmented` <- function(object, parm, level=0.95, method=c("delta", "score", "gradient"), rev.sgn=FALSE,
         var.diff=FALSE, is=FALSE, digits=max(4, getOption("digits") - 1), .coef=NULL, .vcov=NULL, ...){
 #...: argomenti da passare solo a confintSegIS. Questi sono "h", "d.h", "bw" (bw="(1/n)^(1/2)"), nvalues, msgWarn o useSeg.
         method<-match.arg(method)
         cls<-class(object)
         if(length(cls)==1) cls<-c(cls, cls)
-        if(method%in%c("score", "gradient") && !all(cls[1:2]==c("segmented","lm"))) stop("Score- or Gradient-based CI only work with segmented lm models") 
-        if(!is.null(object$constr) && method%in%c("score", "gradient")) stop(" Score/Gradient CI with constrained fits are not allowed") 
+        if(method%in%c("score", "gradient") && !all(cls[1:2]==c("segmented","lm"))) stop("Score- or Gradient-based CI only work with segmented lm models")
+        if(!is.null(object$constr) && method%in%c("score", "gradient")) stop(" Score/Gradient CI with constrained fits are not allowed")
         estcoef<-if(is.null(.coef)) coef(object) else .coef
         COV<- if(is.null(.vcov)) vcov(object,var.diff=var.diff, is=is, ...) else .vcov
 #===========
         #browser()
-        
+
         if(missing(parm)) {
           parm<- object$nameUV$Z
           if(length(rev.sgn)==1) rev.sgn<-rep(rev.sgn,length(parm))
         } else {
-          if(is.numeric(parm)) parm<-object$nameUV$Z[parm] 
-          } 
-        
+          if(is.numeric(parm)) parm<-object$nameUV$Z[parm]
+          }
+
         if(! all(parm %in% object$nameUV$Z)) stop("invalid 'parm' name", call.=FALSE)
-        
+
          if(length(parm)>1) {
-           warning("There are multiple segmented terms. The first is taken", call.=FALSE, immediate. = TRUE)  
+           warning("There are multiple segmented terms. The first is taken", call.=FALSE, immediate. = TRUE)
            parm<-parm[1]
          }
-        
-        
+
+
 #=======================================================================================================
 #========== metodo Delta
 #=======================================================================================================
@@ -45,7 +46,7 @@ confintSegDelta<- function(object, parm, level=0.95, rev.sgn=FALSE, var.diff=FAL
           if(!is.null(term)) nomiU.ok<-(1:k)[nomiU.ok%in%term]
           return(nomiU.ok)
         }
-#--        
+#--
         blockdiag <- function(...) {
           args <- list(...)
           nc <- sapply(args,ncol)
@@ -63,7 +64,7 @@ confintSegDelta<- function(object, parm, level=0.95, rev.sgn=FALSE, var.diff=FAL
           }
           ret
         }
-        
+
         #        if(!"segmented"%in%class(object)) stop("A segmented model is needed")
         if(var.diff && length(object$nameUV$Z)>1) {
             var.diff<-FALSE
@@ -130,46 +131,46 @@ confintSegDelta<- function(object, parm, level=0.95, rev.sgn=FALSE, var.diff=FAL
 #========== metodo Score
 #=======================================================================================================
 confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
-        #wrapper per ci.IS().. 
+        #wrapper per ci.IS()..
         #d.h: incremento di h..
         #se h o d.h sono negativi, tutto il range
         #==========================================================================
         #==========================================================================
         #==========================================================================
-        ci.IS <- function(obj.seg, nomeZ, nomeUj, stat = c("score", "gradient"), transf=FALSE, h = -1, sigma, conf.level = 0.95, use.z = FALSE,  
-                          is = TRUE, fit.is = TRUE, var.is=TRUE, bw=NULL, smooth = 0, msgWarn = FALSE, n.values = 50, 
+        ci.IS <- function(obj.seg, nomeZ, nomeUj, stat = c("score", "gradient"), transf=FALSE, h = -1, sigma, conf.level = 0.95, use.z = FALSE,
+                          is = TRUE, fit.is = TRUE, var.is=TRUE, bw=NULL, smooth = 0, msgWarn = FALSE, n.values = 50,
                           altro = FALSE, cadj = FALSE, plot = FALSE, add=FALSE, agg=FALSE, raw=FALSE, useSeg=FALSE) {
                 #smooth: se 0, i valori decrescenti dello IS score vengono eliminati; porta ad una curva U troppo ripida e quindi IC troppo stretti..
                 #        se 2, B-spline con vincoli di monot e di "passaggio da est.psi"
                 #useSeg, se TRUE (e se smooth>0) viene applicato segmented per selezionare solo i rami con pendenza negativa
                 #   dovrebbe essere usato con smooth>0 e se h=-1 (all.range=TRUE)
                 #transf: funziona solo con grad
-                #obj.seg: oggetto restituito da segmented 
+                #obj.seg: oggetto restituito da segmented
                 #h: costante per definire il range dei valori di riferimento. Should be >1.
                 #   Se NULL viene considerato l'intervallo 'est.psi +/- se*(zalpha*1.5) dove zalpha ? il quantile che dipende da conf.level
                 #   Se qualche negativo, viene considerato il range della x dal quantile 0.02 a quello 0.98.
-                #   Se >0  il range e' est.psi +/- h* zalpha * se.psi 
-                # sigma se mancante viene assunta la stima presa dall'oggetto obj.seg.. 
-                # use.z: se TRUE i quantili della z, otherwise la t_{n-p} 
-                # stat: which statistic use 
+                #   Se >0  il range e' est.psi +/- h* zalpha * se.psi
+                # sigma se mancante viene assunta la stima presa dall'oggetto obj.seg..
+                # use.z: se TRUE i quantili della z, otherwise la t_{n-p}
+                # stat: which statistic use
                 # agg if TRUE, and plot=TRUE and est.psi!= dalla radice che annulla lo IS score, allora l'IC ? shiftato..
-                # is, fit.is, var.is: logical, induced smoothing? 
+                # is, fit.is, var.is: logical, induced smoothing?
                 # plot: la linea nera e' lo score originale (if raw=TRUE)
-                #       la linea rossa e' lo score IS 
+                #       la linea rossa e' lo score IS
                 #       le linea verde e' lo IS score con i pezzi decrescenti eliminati
-                #       se useSeg=T aggiunge una linea segmented.. 
+                #       se useSeg=T aggiunge una linea segmented..
                 #
-                #          
+                #
                 # conf.level: confidence levels can be vector
                 # fit.is: i fitted del modello nullo provengono da un modello in cui (x-psi)_+ ?
                 #         sostituito dall'approx smooth?
                 # bw: the bandwidth in the kernel.. If NULL the SE(\hat\psi) is used, otherwise use a string, something like "1/n" or "sqrt(1/n)"
-                # cadj: se TRUE l'approx di Ca.... che fa riferimentimento ad una Normale 
+                # cadj: se TRUE l'approx di Ca.... che fa riferimentimento ad una Normale
                 #
                 #==========================================================================
                 #==========================================================================
                 #==========================================================================
-                u.psiX <- function(psi, sigma, x, y, XREG = NULL, scale = FALSE, est.psi = NULL, interc = FALSE, 
+                u.psiX <- function(psi, sigma, x, y, XREG = NULL, scale = FALSE, est.psi = NULL, interc = FALSE,
                                    pow = c(1, 1), lag = 0, robust = FALSE, GS = FALSE, is = FALSE, se.psi, var.is = TRUE, which.return = 3,
                                    fit.is = FALSE, altro = FALSE, cadj = FALSE, transf=FALSE) {
                         # Restituisce score e/o var, e/o score stand. (vedi 'which.return') Inoltre se robust=TRUE calcola la
@@ -177,15 +178,15 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         # variabile V viene modificata nell'intorno di psi. Valori di pow diversi da uno sono ignorati quando
                         # lag>0 pow: due potenze dei termini (x-psi)_+ e I(x>psi) se GS=TRUE calcola la statistica GS.
                         # richiede 'est.psi', e 'scale' ? ignorato which.return. 3 means the scaled score, 1= the unscaled
-                        # score, 2=the sqrt(variance) (see the last row) 
-                        # is: se TRUE lo smoothing indotto al num 
+                        # score, 2=the sqrt(variance) (see the last row)
+                        # is: se TRUE lo smoothing indotto al num
                         # var.is: se TRUE lo smooth indotto viene usato anche per il denom (ovvero per la var dello score)
                         # U.is: se TRUE (provided that is=TRUE) the design matrix includes (x-psi)*pnorm((x-psi)/se) rather than pmax(x-psi,0)
                         #altro: se TRUE (and fit.is=TRUE), U.psi = (x-psi)*pnorm((x-psi)/se) + h*dnorm((x-psi)/h)
                         #--------------------------------------------
-                        
+
                         varUpsi.fn <- function(X, sigma = 1, r = NULL) {
-                                #X: the design matrix. The 1st column corresponds to psi 
+                                #X: the design matrix. The 1st column corresponds to psi
                                 #r: the residual vector. If NULL the usual model-based (rather than robust) variance is returned. INF<- if(length(sigma)==1)
                                 # (sigma^2)*crossprod(X) else crossprod(X,diag(sigma^2))%*%X
                                 INF <- crossprod(X)/(sigma^2)
@@ -213,7 +214,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         if (is && missing(se.psi))
                                 stop("is=TRUE needs se.psi")
                         if (interc) XREG <- cbind(rep(1, length(y)), XREG)
-                        
+
                         if(fit.is) {
                                 XX<- if(altro) cbind((x-psi)*pnorm((x - psi)/se.psi)+se.psi*dnorm((x-psi)/se.psi), XREG) else cbind((x-psi)*pnorm((x-psi)/se.psi), XREG)
                                 o <- lm.fit(x = XX, y = y)
@@ -222,10 +223,10 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 .U<-(x > psi)*(x-psi)
                                 if(pow[1]!=1) .U<-.U^pow[1]
                                 XX<- cbind(.U, XREG) #cbind(pmax(x - psi, 0)^pow[1], XREG)
-                                o <- lm.fit(x = XX, y = y)  
+                                o <- lm.fit(x = XX, y = y)
                                 #o <- lm.fit(x = cbind(XREG, pmax(x - psi, 0)), y = y)  #o<-lm(y~0+XREG+pmax(x-psi,0))
                         }
-                        
+
                         #b <- o$coef[length(o$coef)]
                         b <- o$coef[1]
                         mu <- o$fitted.values
@@ -240,13 +241,13 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 return(gs)
                         }
                         if(is){
-                                r<- -b*sum(((y-mu)*pnorm((x - psi)/se.psi)))/sigma^2       
+                                r<- -b*sum(((y-mu)*pnorm((x - psi)/se.psi)))/sigma^2
                                 XX<- if(var.is) cbind(-b*pnorm((x - psi)/se.psi), XX) else cbind(-b*I(x > psi), XX)
                         } else {
                                 r<- -b*sum((y-mu)*I(x > psi))/sigma^2
                                 XX<- cbind(-b*I(x > psi), XX)
                         }
-                        
+
                         #XX <- if (is) cbind(-b * pnorm((x - psi)/se.psi), (x - psi)*pnorm((x - psi)/se.psi), XREG) else cbind(b * V, pmax(x - psi, 0)^pow[1], XREG)
                         #r <- drop(crossprod(XX, y - mu))/sigma^2
                         #if (is && altro) r[1] <- r[1] + (b^2) * se.psi * sum(dnorm((x - psi)/se.psi))/sigma^2
@@ -284,18 +285,18 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 r <- sign(r) * sqrt((r^2) * (1 - (3 - (r^2))/(2 * n)))
                         r
                 }
-                
+
                 # per disegnare devi vettorizzare
                 u.psiXV <- Vectorize(u.psiX, vectorize.args = "psi", USE.NAMES = FALSE)
-                
+
                 #==========================================================================
                 gs.fn <- function(x, y, estpsi, sigma2, psivalue, pow = c(1,1), adj = 1, is = FALSE,
                                   sepsi, XREG = NULL, fit.is = FALSE, altro = FALSE, transf=FALSE) {
-                        # calcola la statist gradiente 
-                        #x,y i dati; estpsi la stima di psi 
+                        # calcola la statist gradiente
+                        #x,y i dati; estpsi la stima di psi
                         #a: la costante per lisciare I(x>psi)-> aI(x>psi)^{a-1} (ignorata se is=TRUE)
-                        #  
-                        # is: se TRUE calcola la GS usando lo score 'naturally smoothed' 
+                        #
+                        # is: se TRUE calcola la GS usando lo score 'naturally smoothed'
                         #adj. Se 0 non fa alcuna modifica e cosi' potrebbe risultare non-positiva.  Se 1 e 2 vedi i codici all'interno
                         logitDeriv<-function(kappa) exp(kappa)*diff(intv)/((1+exp(kappa))^2)
                         logit<-function(psi) log((psi-min(intv))/(max(intv)-psi))
@@ -313,7 +314,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 #    } else {
                                 #      X <- cbind(1, x, pmax(x - psii, 0), XREG)
                                 #    }
-                                
+
                                 if(fit.is) {
                                         X<- if(altro) cbind(1,x, (x-psii)*pnorm((x - psii)/sepsi)+sepsi*dnorm((x-psii)/sepsi), XREG) else cbind(1,x,(x-psii)*pnorm((x-psii)/sepsi), XREG)
                                 } else {
@@ -322,7 +323,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                         X<- cbind(1, x, .U, XREG)
                                         #X<- cbind(1,x,pmax(x - psii, 0)^pow[1], XREG)
                                 }
-                                
+
                                 o <- lm.fit(y = y, x = X)
                                 b <- o$coef[3]
                                 if (is) {
@@ -331,7 +332,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                         v <- if (pow[2] == 1) I(x > psii) else pow[2] * pmax(x - psii, 0)^(pow[2] - 1)
                                 }
                                 if(transf) v<-v * logitDeriv(logit(psii))
-                                r[i] <- -(b/sigma2) * sum((y - o$fitted) * v) 
+                                r[i] <- -(b/sigma2) * sum((y - o$fitted) * v)
                                 r[i] <- if(!transf) r[i]*(estpsi - psii) else r[i]*(logit(estpsi) - logit(psii))
                                 if (altro && fit.is)
                                         r[i] <- r[i] + (estpsi - psii) * ((b * sepsi * sum(dnorm((x - psii)/sepsi))) * (b/sigma2))
@@ -339,9 +340,9 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         if (adj > 0) {
                                 r<- if (adj == 1) pmax(r, 0) else abs(r)
                         }
-                        
+
                         if(transf) psivalue<-logit(psivalue)
-                        segni<-if(transf) sign(logit(estpsi) - psivalue) else sign(estpsi - psivalue) 
+                        segni<-if(transf) sign(logit(estpsi) - psivalue) else sign(estpsi - psivalue)
                         #plot(psivalue, r, type="o")
                         r <- cbind(psi = psivalue, gs.Chi = r, gs.Norm = sqrt(r) * segni )
                         r
@@ -380,17 +381,17 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 B <- r$B
                                 knots <- r$knots
                                 degree <- r$degree
-                                
+
                                 D1 <- diff(diag(ncol(B)), diff = 1)
                                 d <- drop(solve(crossprod(B), crossprod(B, yy)))
                                 # calcola monotone splines. La pen si riferisce solo alle diff dei coef della base!!
-                                
+
                                 # rx <- range(xx) nterm <- round(nterm) dx <- (rx[2] - rx[1])/nterm knots <- c(rx[1] + dx *
                                 # ((-degree):(nterm - 1)), rx[2] + dx * (0:degree))
-                                
+
                                 B0 <- spline.des(knots, c(min(xx), hat.psi, max(xx)), degree + 1)$design
                                 P <- tcrossprod(B0[2, ]) * 10^12
-                                
+
                                 e <- rep(1, length(d))
                                 ww <- (1/(abs(xx - hat.psi) + diff(range(xx))/100))^w
                                 it <- 0
@@ -468,10 +469,10 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                 if (missing(sigma)) sigma <- summary.lm(obj.seg)$sigma
                 if (cadj) use.z = TRUE
                 zalpha <- if (use.z) -qnorm((1 - conf.level)/2) else -qt((1 - conf.level)/2, df = obj.seg$df.residual)
-                
+
                 if(!is.numeric(h)) stop(" 'h' should be numeric")
                 if(sign(h)>=0) h<-abs(h[1])
-                
+
                 Y <- obj.seg$model[, 1]  #la risposta
                 X <- obj.seg$model[, nomeZ]
                 if(is.null(obj.seg$formulaLin)){
@@ -488,13 +489,13 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                 nomePsij<-sub("U","psi", nomeUj)
                 est.psi <- obj.seg$psi[nomePsij, "Est."]
                 se.psi <- obj.seg$psi[nomePsij, "St.Err"]
-                                             
+
                 if (any(h < 0)) {
                      all.range <- TRUE
                      valori <- seq(quantile(X,probs=.05, names=FALSE), quantile(X,probs=.95, names=FALSE), l = n.values)
                      } else {
                      all.range <- FALSE
-                     valori <- seq(max(quantile(X,probs=.05, names=FALSE), est.psi - h * se.psi), 
+                     valori <- seq(max(quantile(X,probs=.05, names=FALSE), est.psi - h * se.psi),
                                 min(quantile(X,probs=.95, names=FALSE), est.psi + h * se.psi), l = n.values)
                      }
                 n <- length(Y)
@@ -505,20 +506,20 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         U.valori <- u.psiXV(psi = valori, sigma = sigma, x = X, y = Y, XREG = XREG, is = is, se.psi = se.psi,
                                 scale = TRUE, pow = c(1, 1), fit.is = fit.is, altro = altro,  cadj = cadj, var.is=var.is, transf=transf)
                         statlab<-"Score statistic"
-                        if(plot && raw)  U.raw <- u.psiXV(valori, sigma, X, Y, XREG, is=FALSE, scale=TRUE, pow = c(1, 1), fit.is=FALSE, altro =altro, cadj = cadj, var.is=FALSE, transf=transf)  
+                        if(plot && raw)  U.raw <- u.psiXV(valori, sigma, X, Y, XREG, is=FALSE, scale=TRUE, pow = c(1, 1), fit.is=FALSE, altro =altro, cadj = cadj, var.is=FALSE, transf=transf)
                         } else {
-                        U.valori <- gs.fn(X, Y, est.psi, sigma^2, valori, is = is, sepsi = se.psi, XREG = XREG, 
+                        U.valori <- gs.fn(X, Y, est.psi, sigma^2, valori, is = is, sepsi = se.psi, XREG = XREG,
                                 fit.is = fit.is, altro = altro, transf=transf, pow=c(1,1))[, 3]
                         statlab<-"Gradient statistic"
-                        if(plot && raw)  U.raw <- gs.fn(X, Y, est.psi, sigma^2, valori, is=FALSE, XREG=XREG, fit.is=FALSE, altro=altro, transf=transf)[,3]  
+                        if(plot && raw)  U.raw <- gs.fn(X, Y, est.psi, sigma^2, valori, is=FALSE, XREG=XREG, fit.is=FALSE, altro=altro, transf=transf)[,3]
                                 }
-                        
-                if(any(is.na(U.valori))) { #stop("NA in the statistic values")	
+
+                if(any(is.na(U.valori))) { #stop("NA in the statistic values")
                         warning("removing NA in the statistic values")
-                        valori<-valori[!is.na(U.valori)]	
+                        valori<-valori[!is.na(U.valori)]
                         U.valori<-U.valori[!is.na(U.valori)]
                         }
-                                             
+
                 logit<-function(psi) log((psi-min(intv))/(max(intv)-psi))
                 logitInv<-function(kappa) (min(intv)+max(intv)*exp(kappa))/(1+exp(kappa))
                 intv<-quantile(X, probs=c(.02,.98),names=FALSE)
@@ -527,20 +528,20 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         est.psi<- logit(est.psi)
                         valori<- logit(valori)
                         x.lab<- "kappa"
-                        }                
-                                             
+                        }
+
                 if(plot && !add) {
                         x.lab<-"psi"
                         if(raw) {
                                 plot(valori, U.raw, xlab=x.lab, ylab=statlab, type="l")
-                                points(valori, U.valori, xlab=x.lab, ylab=statlab, type="l", col=2) 
+                                points(valori, U.valori, xlab=x.lab, ylab=statlab, type="l", col=2)
                                 } else {
                                 plot(valori, U.valori, xlab=x.lab, ylab=statlab, type="l", col=2)
                                 }
                                 abline(h=0, lty=3)
                                 segments(est.psi,0, est.psi, -20, lty=2)
                                 }
-                                             
+
                 if(prod(range(U.valori))>=0) stop("the signs of stat at extremes are not discordant, increase 'h' o set 'h=-1' ")
 
                 if(smooth==0){
@@ -561,11 +562,11 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         f.interpR <- splinefun(Uvalori.ok, valori.ok, method="mono",ties=min)
                                 } else { #if smooth>0
                         if(useSeg){
-                           oseg<-try(suppressWarnings(segmented(lm(U.valori~valori), ~valori, psi=quantile(valori, c(.25,.75),names=FALSE), 
+                           oseg<-try(suppressWarnings(segmented(lm(U.valori~valori), ~valori, psi=quantile(valori, c(.25,.75),names=FALSE),
                                 control=seg.control(n.boot=0, fix.npsi= FALSE))),silent=TRUE)
                            #seg.lm.fit.boot(U.valori, XREG, Z, PSI, w, offs, opz)
                            if(class(oseg)[1]=="try-error"){
-                                oseg<-try(suppressWarnings(segmented(lm(U.valori~valori), ~valori, psi=quantile(valori, .5,names=FALSE), 
+                                oseg<-try(suppressWarnings(segmented(lm(U.valori~valori), ~valori, psi=quantile(valori, .5,names=FALSE),
                                         control=seg.control(n.boot=0))),silent=TRUE)
                                         }
                            if(class(oseg)[1]=="segmented"){
@@ -577,7 +578,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 valori<-valori[slopes<=0]
                                 U.valori<-U.valori[slopes<=0]
                                 }
-                           } 
+                           }
                         fr<-monotSmooth(valori,U.valori,est.psi,k=7)
                         fr<- fr -(.2/diff(range(valori))) *(valori-mean(valori)) #add a small negative trend to avoid constant values in U..
                         vLeft<-cbind(valori[valori<=est.psi], fr[valori<=est.psi])
@@ -587,14 +588,14 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                                 if( (max(valori)< intv[2]) && (fr[length(fr)]> min(-zalpha))) return("errRight")
                                 }
                         f.interpL<-f.interpR<-splinefun(fr,valori,"m",ties=min)
-                        }#end_if smooth 
-                L<-f.interpL(zalpha) 
+                        }#end_if smooth
+                L<-f.interpL(zalpha)
                 U<-f.interpR(-zalpha)
-                #browser()    
+                #browser()
                 #il valore che annulla lo IS score puo' essere differente dalla stima di segmented
                 #   quindi salviamo questo "delta": gli IC potrebbero essere aggiustati con IC+delta
                 delta<- est.psi-f.interpL(0)  #if(abs((f.interpL(0)-f.interpR(0))/f.interpR(0))>.001)
-                                             
+
                 if(plot){
                         if(!agg) delta<-0
                         #if(raw) plot(valori, U.raw, xlab="psi", ylab=statlab, type="l") else plot(valori, U.valori, xlab="psi", ylab=statlab, type="n")
@@ -603,7 +604,7 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         lines(f.interpL(vv)+delta,vv, col=grey(.8, alpha=.6), lwd=4)
                         vv<-seq(0,-zalpha*1.2,l=50)
                         lines(f.interpR(vv)+delta,vv, col=grey(.8, alpha=.6), lwd=4)
-                        points(est.psi, 0, pch=19)             
+                        points(est.psi, 0, pch=19)
                         miop(c(L,U)+delta,c(zalpha,-zalpha),only.lines=TRUE,top=FALSE, right=FALSE)
                         }
                 if (stat == "gradient" && transf) {
@@ -612,21 +613,21 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
                         }
                 L<- pmax(L, quantile(X,probs=.02))
                 U<- pmin(U,quantile(X,probs=.98))
-                                             
+
                 #r<-cbind(lower=L,upper=U)
                 #rownames(r) <- paste(conf.level)
                 #attr(r, "delta")<-delta
                 r<-c(est.psi, L, U)
                 return(r)
                 } #end fn
-        
+
         #--------------------------------------------------------------------------
         #==========================================================================
         #==========================================================================
         #==========================================================================
 
-        
-        
+
+
         if(!all(class(obj) == c("segmented","lm"))) stop("A segmented lm object is requested")
         if(missing(parm)){
                 nomeZ<- parm<- obj$nameUV$Z
@@ -642,11 +643,11 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
         #npsi.term<- length(nomiU.term) #no. di breakpoints for the same variable.
         ra<-matrix(NA, length(nomiU.term), 3)
         rownames(ra)<- nomiU.term
-        
+
         for(U.j in nomiU.term){
                 if(any(c(d.h, h)<0)) {
                         ra[U.j,]<-ci.IS(obj, nomeZ, U.j, h=-1, conf.level=level, ...)
-                }  
+                }
                 d.h<-min(max(d.h, 1.5),10)
                 a<-"start"
                 it<-0
@@ -671,17 +672,17 @@ confintSegIS<-function(obj, parm, d.h=1.5, h=2.5, conf.level=level, ...){
         rownames(ra)<-sub("U","psi", nomiU.term)
         ra
 } #end fn confintSegIS
-        
-        
+
+
 #=======================================================================================================
 #========== inizio funzione
 #=======================================================================================================
 
 if(method=="delta"){
-        r<-confintSegDelta(object, parm, level, rev.sgn, var.diff, is, ...)    
+        r<-confintSegDelta(object, parm, level, rev.sgn, var.diff, is, ...)
         } else {
-        r<-confintSegIS(object, parm, stat=method, conf.level=level, ...)       
+        r<-confintSegIS(object, parm, stat=method, conf.level=level, ...)
         }
         r<-signif(r,digits)
-return(r)                
+return(r)
 }

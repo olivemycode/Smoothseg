@@ -1,3 +1,4 @@
+#' @export
 `summary.segmented` <-
 function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
     if(is.null(object$psi)) object<-object[[length(object)]]
@@ -18,7 +19,7 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
     .coef <- coef(object)
     if(is.null(.coef)) .coef<- object$coef
     if(is.null(.coef)) stop(" No coefficients in the fit object?")
-    
+
     idU<-match(nomiU,names(.coef[!is.na(.coef)]))
     idV<-match(nomiV,names(.coef[!is.na(.coef)]))
     beta.c<- .coef[nomiU]
@@ -53,7 +54,7 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
             p <- object$rank #n.parametri stimati
             p1 <- 1L:p
             inv.XtX <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-            X <- qr.X(Qr,FALSE) 
+            X <- qr.X(Qr,FALSE)
             attr(X, "assign") <- NULL
             K<-length(unique(object$id.group)) #n.gruppi (=n.psi+1)
             dev.new<-tapply(object$residuals, object$id.group, function(.x){sum(.x^2)})
@@ -76,9 +77,9 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
               summ$Ttable[,4]<- 2 * pt(abs(summ$Ttable[,3]),df=object$df.residual, lower.tail = FALSE)
             #dimnames(summ$Ttable) <- list(names(object$coefficients)[Qr$pivot[p1]], c("Estimate", "Std. Error", "t value", "Pr(>|t|)"))
             }
-      
+
       summ$Ttable[idU,4]<-NA
-      summ$Ttable<-summ$Ttable[-idV,] 
+      summ$Ttable<-summ$Ttable[-idV,]
       summ[c("it","epsilon","conv.warn")]<-object[c("it","epsilon","id.warn")]
       summ$n.boot<-length(na.omit(object$psi.history$all.ss))
       summ$var.diff<-var.diff

@@ -1,8 +1,9 @@
+#' @export
 pred.step.plot<-function(object, k=NULL, apprx=c("cdf","abs"), nomeZ, ...){
   apprx=match.arg(apprx)
   X=model.matrix.stepmented(object, k=k, apprx=apprx)
   V=vcov.stepmented(object)
-  
+
   #browser()
   interc=TRUE
   nomiZ<- object$nameUV$Z
@@ -10,13 +11,13 @@ pred.step.plot<-function(object, k=NULL, apprx=c("cdf","abs"), nomeZ, ...){
   nomiU<- object$nameUV$U
   nomiPsi<- gsub("V","psi", nomiV)
   #id.noV<-setdiff(colnames(X), nomiPsi)
-  
+
   #se ci sono piu' variabili segmented seleziona solo i termini di un unica variabile
   if(missing(nomeZ)) nomeZ <-nomiZ[1]
   nomeU.ok   <- grep(paste(".", nomeZ,sep=""), nomiU, value=TRUE)
   nomePsi.ok <- grep(paste(".", nomeZ,sep=""), nomiPsi, value=TRUE)
-  
-  
+
+
   N=10
   vv<-matrix(, N, length(nomePsi.ok))
   for(i in 1:length(nomePsi.ok)){
@@ -25,21 +26,21 @@ pred.step.plot<-function(object, k=NULL, apprx=c("cdf","abs"), nomeZ, ...){
     se  <- object$psi[nomePsi.ok[i],"St.Err"]
     vv[,i] <-  qnorm(seq(.0005, .9995,l=N), psi, se)
   }
-  vv<-as.vector(vv)  
+  vv<-as.vector(vv)
   mi=object$rangeZ[1,nomeZ]
   ma=object$rangeZ[2, nomeZ]
-  vv<-sort(c(object$psi.rounded[1, nomePsi.ok], seq(mi,ma,l=30), 
+  vv<-sort(c(object$psi.rounded[1, nomePsi.ok], seq(mi,ma,l=30),
              vv))
-  
+
   Xok<-matrix(, length(vv), 2*length(nomePsi.ok))
   colnames(Xok)<- c(nomeU.ok,nomePsi.ok)
   for(i in 1:length(nomePsi.ok)){
     Xok[, nomeU.ok[i]]   <- spline(object$Z[,nomeZ], X[, nomeU.ok[i]], xout=vv)$y
     Xok[, nomePsi.ok[i]] <- spline(object$Z[,nomeZ], X[, nomePsi.ok[i]], xout=vv)$y
   }
-  
+
   id.ok = grep(paste(".", nomeZ,sep=""), colnames(X))
-  
+
   psii = object$psi.rounded[1, nomePsi.ok]
   #psii = object$psi[nomePsi.ok,"Est."]
   M=sapply(psii, function(.x) 1*(vv>.x))
@@ -50,7 +51,7 @@ pred.step.plot<-function(object, k=NULL, apprx=c("cdf","abs"), nomeZ, ...){
     M = cbind(1, M)
     cof<-c(object$coefficients[1], cof)
   }
-  
+
   se=sqrt(rowSums((Xok%*%V[id.ok,id.ok])*Xok))
   ff<-drop(M %*% cof)
   g <- cut(vv, breaks = c(mi, psii, ma), labels =FALSE, include.lowest = TRUE)
@@ -63,9 +64,10 @@ pred.step.plot<-function(object, k=NULL, apprx=c("cdf","abs"), nomeZ, ...){
   #matpoints(vv, cbind(ff, ff-2*se, ff+2*se), col=4, pch=4)
 }
 
+#' @export
 model.matrix.stepmented<-function(object, k=NULL, apprx=c("cdf","abs"), ...){
   #if(!inherits(object, "segmented")) stop("A 'segmented' fit is requested")
-  apprx=match.arg(apprx) 
+  apprx=match.arg(apprx)
   if(inherits(object, "lm")) {
      X<- qr.X(object$qr, ...)
      if(inherits(object, "glm")) {
@@ -88,7 +90,7 @@ model.matrix.stepmented<-function(object, k=NULL, apprx=c("cdf","abs"), ...){
    maxZ.list<-NULL
    #browser()
    sigma=sqrt(sum(object$residuals^2)/object$df.residual)
-   
+
    for(i in 1:length(nomiU)){
      nomeZ<- gsub("U[1-9].","",nomiU[i])
      Z<-object$Z[,nomeZ]
@@ -105,13 +107,13 @@ model.matrix.stepmented<-function(object, k=NULL, apprx=c("cdf","abs"), ...){
        ss01=n^k
      }
      ss<- ss01*(maxZ-minZ)
-       
-     X0[, nomiU[i]]<-  pnorm((Z-psi)/ss) 
+
+     X0[, nomiU[i]]<-  pnorm((Z-psi)/ss)
      X0[, nomiPsi[i]] <- -(object$coefficients[nomiU[i]]/ss)*dnorm((Z-psi)/ss)
-     
+
      #X0[, nomiU[i]]<-  pnorm((Z01-psi01)/ss01) #1*(Z>psi)
      #X0[, nomiPsi[i]] <- -(object$coefficients[nomiU[i]]/ss01)*dnorm((Z01-psi01)/ss01)
-     
+
      #opzione 2:
      xx <- Z-psi
      den <- -xx+2*xx*pnorm(xx/ss)+2*ss*dnorm(xx/ss) #.05*log(cosh((x-.5)/.05)))

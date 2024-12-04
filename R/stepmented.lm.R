@@ -1,4 +1,5 @@
-stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.control(), 
+#' @export
+stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.control(),
                           keep.class=FALSE, var.psi=FALSE, ...) {
   # ---------
   mylm<-function(x,y,w=1,offs=0){
@@ -23,28 +24,28 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   }
   #-----------
   agg<- 1-control$fc
-  it.max<- control$it.max 
+  it.max<- control$it.max
   tol<-  control$tol
-  display<- control$visual 
-  digits <- control$digits 
+  display<- control$visual
+  digits <- control$digits
   min.step <- control$min.step
-  conv.psi <- control$conv.psi 
+  conv.psi <- control$conv.psi
   alpha <- control$alpha
-  fix.npsi <- control$fix.npsi 
-  n.boot <- control$n.boot 
-  break.boot<- control$break.boot + 2 
+  fix.npsi <- control$fix.npsi
+  n.boot <- control$n.boot
+  break.boot<- control$break.boot + 2
   seed<- control$seed
   fix.npsi<-control$fix.npsi
   h<-control$h
   #-----------
   #browser()
-  
+
   if(!(inherits(obj,"lm") || is.vector(obj) || is.ts(obj))) stop("obj should be a 'lm' fit, a 'vector' or 'ts' object")
-  
+
     y.only.vector <- FALSE
-    Fo0 <- formula(obj) 
+    Fo0 <- formula(obj)
     if(missing(seg.Z)) {
-      #if(length(all.vars(formula(obj)))==1) 
+      #if(length(all.vars(formula(obj)))==1)
       seg.Z<- as.formula(paste("~", "id"))
       assign("id",1:length(obj$residuals),parent.frame())
       #id<-1:length(obj$residuals)
@@ -52,25 +53,25 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     }
     n.Seg<-length(all.vars(seg.Z))
     id.npsi<-FALSE
-    
+
     if("V" %in% sub("V[1-9]*[0-9]","V", c(all.vars(seg.Z), all.vars(formula(obj) )[-1]))) stop("variable names 'V', 'V1', .. are not allowed")
     if("U" %in% sub("U[1-9]*[0-9]","U", c(all.vars(seg.Z), all.vars(formula(obj) )[-1]))) stop("variable names 'U', 'U1', .. are not allowed")
     if(any(c("$","[") %in% all.names(seg.Z))) stop(" '$' or '[' not allowed in 'seg.Z' ")
-    
-    if(missing(psi)){ 
+
+    if(missing(psi)){
       if(n.Seg==1){
         if(missing(npsi)) npsi<-1
         npsi<-lapply(npsi, function(.x).x)
-        if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match") 
+        if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match")
         names(npsi)<-all.vars(seg.Z)
       } else {#se n.Seg>1
-        #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE) 
+        #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE)
         if (missing(npsi)) {
           npsi<-rep(1, n.Seg)
           names(npsi)<-all.vars(seg.Z)
         }
         if(length(npsi)!=n.Seg) stop(" 'npsi' and seg.Z should have the same length")
-        if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")    
+        if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")
       }
       psi<-lapply(npsi, function(.x) rep(NA,.x))
       id.npsi<-TRUE ##id.npsi<-FALSE #e' stato fornito npsi?
@@ -84,9 +85,9 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
       }
     }
     n.psi<- length(unlist(psi))
-    
+
     #browser()
-    
+
     #if(missing(x)) x<-1:n
     #if(missing(psi)) {
     #  if(missing(npsi)) npsi<-1
@@ -103,36 +104,36 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     if(class(mf$formula)[1]=="name" && !"~"%in%paste(mf$formula)) mf$formula<-eval(mf$formula)
     mfExt<- mf
     mf$formula<-update.formula(mf$formula,paste(seg.Z,collapse=".+"))
-    if(!is.null(obj$call$offset) || !is.null(obj$call$weights) || !is.null(obj$call$subset)){ 
-      mfExt$formula <- 
-        update.formula(mf$formula, 
+    if(!is.null(obj$call$offset) || !is.null(obj$call$weights) || !is.null(obj$call$subset)){
+      mfExt$formula <-
+        update.formula(mf$formula,
                        paste(".~.+", paste(
-                         c(all.vars(obj$call$offset), 
+                         c(all.vars(obj$call$offset),
                            all.vars(obj$call$weights),
-                           all.vars(obj$call$subset)), 
+                           all.vars(obj$call$subset)),
                          collapse = "+")
                        ))
     }
-    
+
     mf <-  eval(mf, parent.frame())
     n<-nrow(mf)
     #questo serve per inserire in mfExt le eventuali variabili contenute nella formula con offset(..)
     nomiOff<-setdiff(all.vars(formula(obj)), names(mf))
     if(length(nomiOff)>=1) mfExt$formula<-update.formula(mfExt$formula,paste(".~.+", paste( nomiOff, collapse="+"), sep=""))
     nomiTUTTI<-all.vars(mfExt$formula) #comprende anche altri nomi (ad es., threshold) "variabili"
-    nomiNO<-NULL 
+    nomiNO<-NULL
     for(i in nomiTUTTI){
       r<-try(eval(parse(text=i), parent.frame()), silent=TRUE)
       if(class(r)[1]!="try-error" && length(r)==1 && !is.function(r) && !i%in%names(mf)) nomiNO[[length(nomiNO)+1]]<-i
     }
     if(!is.null(nomiNO)) mfExt$formula<-update.formula(mfExt$formula,paste(".~.-", paste( nomiNO, collapse="-"), sep=""))
     mfExt<-eval(mfExt, parent.frame())
-    
+
     #mf <- mfExt
     #browser()
     if(nrow(mf)!=nrow(mfExt)) stop("missing values in any stepmented covariate?")
-    
-    
+
+
     ww <- as.vector(model.weights(mf))
     offs <- as.vector(model.offset(mf))
     if (is.null(ww)) ww <- rep(1, n)
@@ -150,18 +151,18 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
       new.XREGseg<-data.matrix(new.mf)
       XREG<-cbind(XREG,new.XREGseg)
     }
-    
+
     id.n.Seg<-(ncol(XREG)-n.Seg+1):ncol(XREG)
     XREGseg<-XREG[,id.n.Seg,drop=FALSE]
     XREG <- XREG[, match(c("(Intercept)", namesXREG0),colnames(XREG), nomatch = 0), drop = FALSE]
     XREG<-XREG[,unique(colnames(XREG)), drop=FALSE]
     n <- nrow(XREG)
-    
+
     #browser()
 
     Z<-lapply(apply(XREGseg,2,list),unlist) #prende anche i nomi!
     name.Z <- names(Z) <- colnames(XREGseg)
-    
+
     if(length(Z)==1 && is.vector(psi) && (is.numeric(psi)||is.na(psi))){
       psi <- list(as.numeric(psi))
       names(psi)<-name.Z
@@ -181,7 +182,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
         if(any(is.na(psi[[i]]))) psi[[i]]<- (min(Z[[i]])+ diff(range(Z[[i]]))*(1:K)/(K+1))
       }
     }
-    
+
     #########==================== SE PSI FIXED
     id.psi.fixed <- FALSE
     if(!is.null(fixed.psi)){
@@ -194,7 +195,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
         if(!(names(fixed.psi) %in% all.vars(seg.Z))) stop("names(fixed.psi) is not a subset of variables in 'seg.Z' ")
       } else {
         stop(" 'fixed.psi' has to be a named list ")
-      } 
+      }
       fixed.psi<-lapply(fixed.psi, sort)
       Zfixed<-matrix(unlist(mapply(function(x,y)rep(x,y),Z[names(fixed.psi)], sapply(fixed.psi, length), SIMPLIFY = TRUE)), nrow=n)
       n.fixed.psi<-sapply(fixed.psi, length)
@@ -206,7 +207,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
       XREG<-cbind(XREG, fixedU)
     }
     #########====================END  SE PSI FIXED
-    
+
     initial.psi<-psi
     a <- sapply(psi, length) #n. di psi per ogni covariate
     #per evitare che durante il processo iterativo i psi non siano ordinati
@@ -221,12 +222,12 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     c1 <- apply((Z <= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo <)
     c2 <- apply((Z >= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo >)
     if(sum(c1 + c2) != 0 || is.na(sum(c1 + c2)) ) stop("starting psi out of the admissible range")
-    
+
     colnames(Z) <- nomiZ <- rep(nome, times = a)
     ripetizioni <- as.numeric(unlist(sapply(table(nomiZ)[order(unique(nomiZ))], function(.x) {1:.x})))
-    
+
     #browser()
-    
+
     nomiU <- paste("U", ripetizioni, sep = "")
     nomiU <- paste(nomiU, nomiZ, sep = ".")
     nomiV <- paste("V", ripetizioni, sep = "")
@@ -236,17 +237,17 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     dev0 <-sum(obj$residuals^2)
     list.obj <- list(obj)
     nomiOK<-nomiU
-  
+
   #  invXtX<-if(!is.null(obj$qr)) chol2inv(qr.R(obj$qr)) else NULL #(XtX)^{-1}
   #  Xty<-crossprod(XREG,y)
   #  opz<-list(toll=toll,h=h, stop.if.error=stop.if.error, dev0=dev0, visual=visual, it.max=it.max,
-  #            nomiOK=nomiOK, id.psi.group=id.psi.group, gap=gap, visualBoot=visualBoot, pow=pow, digits=digits,invXtX=invXtX, Xty=Xty, 
+  #            nomiOK=nomiOK, id.psi.group=id.psi.group, gap=gap, visualBoot=visualBoot, pow=pow, digits=digits,invXtX=invXtX, Xty=Xty,
   #            conv.psi=conv.psi, alpha=alpha, fix.npsi=fix.npsi, min.step=min.step, fc=fc)
   x.lin <-XREG
   rangeZ <- apply(Z, 2, range)
-  
+
   #browser()
-  
+
   plin<-ncol(x.lin)
   #if(!is.list(psi)) psi<-list(psi)
   #P <- length(psi) #n. variabili con breakpoints
@@ -259,9 +260,9 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   #PSI<- matrix(psi0, n, npsi, byrow=TRUE)
   #if(ncol(x)!=P) stop("errore")
   #Xtrue<-toMatrix(x, npsii)
-  
+
   #browser()
-  
+
   if(it.max == 0) {
     U <- (Xtrue>PSI)
     colnames(U) <- paste(ripetizioni, nomiZ, sep = ".")
@@ -269,31 +270,31 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     #for (i in 1:ncol(U)) assign(nomiU[i], U[, i], envir = KK)
     for(i in 1:ncol(U)) mfExt[nomiU[i]]<-mf[nomiU[i]]<-U[,i]
     Fo <- update.formula(formula(obj), as.formula(paste(".~.+", paste(nomiU, collapse = "+"))))
-    obj <- update(obj, formula = Fo, evaluate=FALSE, data=mfExt) #data = mf, 
+    obj <- update(obj, formula = Fo, evaluate=FALSE, data=mfExt) #data = mf,
     if(!is.null(obj[["subset"]])) obj[["subset"]]<-NULL
     obj<-eval(obj, envir=mfExt)
     #if (model) obj$model <-mf  #obj$model <- data.frame(as.list(KK))
-    
+
     psi <- cbind(psi, psi, 0)
     rownames(psi) <- paste(paste("psi", ripetizioni, sep = ""), nomiZ, sep=".")
     colnames(psi) <- c("Initial", "Est.", "St.Err")
-    
+
     obj$psi <- psi
     return(obj)
   }
-  
-  
+
+
   c1 <- apply((Xtrue <= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo <)
   c2 <- apply((Xtrue >= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo >)
   if(sum(c1 + c2) != 0 || is.na(sum(c1 + c2)) ) stop("starting psi out of the admissible range")
   if(is.null(alpha)) alpha<- max(.05, 1/length(y))
   if(length(alpha)==1) alpha<-c(alpha, 1-alpha)
-  
+
   opz<-list(toll=tol, dev0=dev0, display=display, it.max=it.max, agg=agg, digits=digits, rangeZ=rangeZ,
             id.psi.group=id.psi.group, h=h,
-            #nomiOK=nomiOK, , visualBoot=visualBoot, invXtX=invXtX, Xty=Xty, 
+            #nomiOK=nomiOK, , visualBoot=visualBoot, invXtX=invXtX, Xty=Xty,
             conv.psi=conv.psi, alpha=alpha, fix.npsi=fix.npsi, min.step=min.step, npsii=npsii, seed=control$seed)
-  
+
   # #################################################################################
   # #### jump.fit(y, XREG=x.lin, Z=Xtrue, PSI, w=ww, offs, opz, return.all.sol=FALSE)
   # #################################################################################
@@ -302,7 +303,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   } else {
     #browser()
     #if("seed" %in% names(control)) set.seed(control$seed)
-    obj<-step.lm.fit.boot(y, x.lin, Xtrue, PSI, ww, offs, opz, n.boot, break.boot=break.boot) 
+    obj<-step.lm.fit.boot(y, x.lin, Xtrue, PSI, ww, offs, opz, n.boot, break.boot=break.boot)
     seed<- obj$seed
   }
   # if(!is.list(obj)){
@@ -319,24 +320,24 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   beta.c<- obj$beta.c
   beta.c<-unlist(tapply(psi, id.psi.group, function(.x)beta.c[order(.x)]))
   #unlist(lapply(unique(id.psi.group), function(.x) beta.c[id.psi.group==.x][order(psi[id.psi.group==.x])]))
-  psi<-unlist(tapply(psi, id.psi.group, sort)) 
+  psi<-unlist(tapply(psi, id.psi.group, sort))
   Z0<-apply(Z,2,sort)
   psi.rounded<-sapply(1:npsi, function(j) Z0[sum(Z0[,j]<psi[j])+c(0,1),j])
-  
+
   #browser()
-  
+
   psi.mid<-apply(psi.rounded,2,mean)
   #QUALI prendere? psi, psi.mid o psi.rounded?
   PSI.mid<- matrix(psi, n, npsi, byrow = TRUE)
-  
+
   #bisogna evitare che una qualche x_i sia uguale a psi, altrimenti la costruzione di V-> INF
   DEN <- abs(Xtrue - PSI.mid)
-  DEN <- apply(DEN, 2, function(.x) pmax(.x, sort(.x)[2]/2))  #pmax(.x, diff(range(.x))/1000)) 
-  
+  DEN <- apply(DEN, 2, function(.x) pmax(.x, sort(.x)[2]/2))  #pmax(.x, diff(range(.x))/1000))
+
   #xx=Xtrue - PSI.mid
   #ss=n^(-.8)
   #den <- -xx+2*xx*pnorm(xx/ss)+2*ss*dnorm(xx/ss)     #.05*log(cosh((x-.5)/.05)))
-  
+
   V <- (1/(2 * DEN))
   colnames(V)<-nomiV
   U <- (Xtrue * V + 1/2)
@@ -345,28 +346,28 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   nomiVxb <- gsub("V", "psi", nomiV)
   nnomi <- c(nomiU, nomiVxb)
   #browser()
-  
+
   for(i in 1:ncol(U)) {
       mfExt[nomiU[i]]<-mf[nomiU[i]] <- U[,i]
       mfExt[nomiVxb[i]]<-mf[nomiVxb[i]] <- Vxb[,i]
   }
   Fo <- update.formula(formula(obj0), as.formula(paste(".~.+", paste(nnomi, collapse = "+"))))
   objF <- update(obj0, formula = Fo,  evaluate=FALSE, data = mfExt)
-  #eliminiamo subset, perche' se e' del tipo subset=x>min(x) allora continuerebbe a togliere 1 osservazione 
+  #eliminiamo subset, perche' se e' del tipo subset=x>min(x) allora continuerebbe a togliere 1 osservazione
   if(!is.null(objF[["subset"]])) objF[["subset"]]<-NULL
   objF<-eval(objF, envir=mfExt)
   objF$offset<- obj0$offset
   objW<-objF
-  
+
   #browser()
-  
+
   #se1=predict.lm(objF, se.fit=TRUE)
   #ff<-1.934+1.61*(x>.605)
   #matplot(x, cbind(ff, ff-2*se$se.fit, ff+2*se$se.fit), type="l")
-  
+
   #controllo se qualche coeff e' NA..
   isNAcoef<-any(is.na(objF$coefficients))
- 
+
  #browser()
   if (isNAcoef) {
     nameNA.psi <- names(objF$coefficients)[which(is.na(objF$coefficients))]
@@ -390,29 +391,29 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
         psi.rounded <- psi.rounded[, -idNA.psi, drop = FALSE]
     }
   }
-  
+
   #organizziamo i risultati da restituire per psi...
   colnames(psi.rounded)<-names(psi)<-nomiVxb
   rownames(psi.rounded)<-c("inf [","sup (")
-  
+
 
   #browser()
-  
-  
+
+
   ris.psi<-matrix(NA,length(psi),3)
   colnames(ris.psi) <- c("Initial", "Est.", "St.Err")
   rownames(ris.psi) <- nomiVxb
   ris.psi[,2]<-psi
   #ris.psi[,3]<-sqrt(vv)
-  
+
   a<-tapply(id.psi.group, id.psi.group, length)
   #NB "a" deve essere un vettore che si appatta con "initial.psi" per ottnetere "initial" sotto... Se una variabile alla fine risulta
   # senza breakpoint questo non avviene e ci sono problemi nella formazione di "initial". Allora costruisco a.ok
   a.ok<-NULL
   nomiFINALI<-unique(nomiZ)
-  
+
   for(j in name.Z){
-    if(j %in% nomiFINALI) { 
+    if(j %in% nomiFINALI) {
       a.ok[length(a.ok)+1]<-a[1]
       a<-a[-1]
     } else {
@@ -424,9 +425,9 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     ris.psi[,1]<- NA
   } else {
     initial<-unlist(mapply(function(x,y){if(is.na(x)[1])rep(x,y) else x }, initial.psi[nomiFINALI], a.ok[a.ok!=0], SIMPLIFY = TRUE))
-    ris.psi[,1]<-initial #if(stop.if.error)  ris.psi[,1]<-initial 
+    ris.psi[,1]<-initial #if(stop.if.error)  ris.psi[,1]<-initial
   }
- 
+
   objF$psi <- ris.psi
   objF$psi.rounded <- psi.rounded
   #objW<-objF
@@ -446,19 +447,19 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   objF$call <- match.call()
   objF$orig.call<-orig.call
   objF$psi.history <- psi.values
-  objF$it <- it 
+  objF$it <- it
   objF$epsilon <- obj$epsilon
   objF$id.warn <- id.warn
   if(n.boot>0) objF$seed <- seed
   class(objF) <- c("stepmented", class(obj0))
-  
+
   #Un effetto aggiuntivo..
   Z.in.obj<-intersect(all.vars(Fo0), all.vars(seg.Z))
   if(length(Z.in.obj)>0){
     tt<-terms(Fo0)#, specials=Z.in.obj)
     #id<-match(Z.in.obj, all.vars(Fo0))-1 #1 e' per la risposta..
     id<-match(Z.in.obj, intersect(all.vars(Fo0), names(mf)))-1
-      
+
     nome<-attr(tt,"term.labels")[id]
     Fo.ok<-as.formula(paste("~0", nome, sep="+"))
     f.x<-matrix(NA, 150, ncol(objF$Z[,Z.in.obj,drop=FALSE])) #prima era nrow(objF$Z) invece che 100
@@ -473,9 +474,9 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
     colnames(f.x)<-Z.in.obj
     objF$f.x<-f.x
   }
-  
+
   objF$psi<- objF$psi[,-1,drop=FALSE] #rimuovi la colonna Initial
-  
+
   if(var.psi){
     Cov <- vcov.stepmented(objF, k=NULL)
     id <- match(nomiVxb, names(coef(objF)))
@@ -489,7 +490,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   #   r<- est1/est2
   #   vv<-(v1+v2*r^2-2*r*v12)/est2^2
   #   vv}
-  # 
+  #
   # varPsi<- rep(NA, length(nomiU))
   # for(j in 1:length(nomiU)){
   #   num<-objF$coefficients[nomiVxb[j]]
@@ -497,7 +498,7 @@ stepmented.lm <- function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control=seg.con
   #   v.g <-Cov[nomiVxb[j],nomiVxb[j]]
   #   v.b<- Cov[nomiU[j],nomiU[j]]
   #   cov.g.b <- Cov[nomiVxb[j],nomiU[j]]
-  #   #if(is.null(rho)) 
+  #   #if(is.null(rho))
   #   rho<-mean(Xtrue[, nomiZ[j] ,drop=TRUE]<psi[[nomiVxb[j]]])
   #   #browser()
   #   rho<-  rho^(sqrt(1/n))

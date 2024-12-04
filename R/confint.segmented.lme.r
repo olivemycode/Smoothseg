@@ -1,3 +1,4 @@
+#' @export
 confint.segmented.lme <- function(object, parm, level = 0.95, obj.boot, ...) {
 
   ci.boot <- function(m, conf.level = 0.95) {
@@ -20,11 +21,11 @@ confint.segmented.lme <- function(object, parm, level = 0.95, obj.boot, ...) {
                                                                          (1 - conf.level)/2)), na.rm = TRUE)
     CIt[1, ] <- est.orig - quantT[2, ] * se.orig
     CIt[2, ] <- est.orig - quantT[1, ] * se.orig
-    
+
     ris <- list(norm = CIN, perc = CIperc, t = CIt)
     ris
   }
-  
+
   opz <- list(...)
   if (missing(obj.boot)) {
     if (is.null(opz$B)) {

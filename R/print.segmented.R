@@ -1,3 +1,4 @@
+#' @export
 `print.segmented` <- function(x,digits = max(3, getOption("digits") - 3),...){
 #revisione 15/05/03; 24/02/04/.. 5/06/19!!! :))
         if(is.null(x$psi)) x<-x[[length(x)]]
@@ -11,7 +12,7 @@
         if(is.null(.coef)) .coef<- x$coef
         if(is.null(.coef)) stop(" No coefficients in the fit object?")
         iV<- -match(x$nameUV$V,names(.coef))#iV<- -grep("psi.",names(coef(x)))#indices all but V
-        
+
 
         #print(x$coef[iV])
         print.default(format(.coef[iV], digits = digits), print.gap = 2, quote = FALSE)

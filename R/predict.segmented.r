@@ -1,5 +1,6 @@
 #new predict.segmented
-predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","confidence", "prediction"), 
+#' @export
+predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","confidence", "prediction"),
             type = c("link", "response"),# "terms"),
             level=0.95, .coef=NULL, ...){
   blockdiag <- function(...) {
@@ -19,8 +20,8 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
     }
     ret
   }
-  
-  dummy.matrix<-function(x.values, x.name, obj.seg, psi.est=TRUE, isV=FALSE, .coef=NULL){ 
+
+  dummy.matrix<-function(x.values, x.name, obj.seg, psi.est=TRUE, isV=FALSE, .coef=NULL){
     #given the segmented fit 'obj.seg' and a segmented variable x.name with corresponding values x.values,
     #this function simply returns a matrix with columns (x, (x-psi)_+, -b*I(x>psi))
     #or  ((x-psi)_+, -b*I(x>psi)) if obj.seg does not include the coef for the linear "x"
@@ -46,24 +47,24 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
     #nameV<- grep(paste("\\.",x.name,"$", sep=""), obj.seg$nameUV$V, value = TRUE)
     nameU<-obj.seg$nameUV$U[f.U(obj.seg$nameUV$U,x.name)]
     nameV<-obj.seg$nameUV$V[f.U(obj.seg$nameUV$V,x.name)] #grep(x.name, obj.seg$nameUV$V, value = TRUE)
-    
-    
+
+
     if(is.null(obj.seg$constr)){
       diffSlope<-estcoef[nameU]
     } else {
       diffSlope<-drop(obj.seg$constr$invA.RList[[match(x.name, obj.seg$nameUV$Z)]]%*%estcoef[nameU])[-1]
     }
-    
+
     est.psi<-obj.seg$psi[nameV,"Est."]
     se.psi<-obj.seg$psi[nameV, "St.Err"]
     k<-length(est.psi)
     PSI <- matrix(rep(est.psi, rep(n, k)), ncol = k)
     SE.PSI <- matrix(rep(se.psi, rep(n, k)), ncol = k)
     newZ<-matrix(x.values, nrow=n,ncol=k, byrow = FALSE)
-    
-    
+
+
     dummy1<-if(isV[1]) (newZ-PSI)*pnorm((newZ-PSI)/SE.PSI) else  (newZ-PSI)*(newZ>PSI) #pmax(newZ-PSI,0)
-    
+
     if(psi.est){
       V<-if(isV[2]) -pnorm((newZ-PSI)/SE.PSI) else -(newZ>PSI) #ifelse(newZ>PSI,-1,0)
       dummy2<- if(k==1) V*diffSlope  else V%*%diag(diffSlope) #t(diffSlope*t(-I(newZ>PSI)))
@@ -75,7 +76,7 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
       #colnames(newd)[1]<- x.name
       colnames(newd)<-c(x.name, sub("psi","U", nameV))
     }
-    
+
     #if(!x.name%in%names(coef(obj.seg))) newd<-newd[,-1,drop=FALSE] #restituisce sempre il termine principale..
     #aggiungi (eventualmente) le colonne relative ai psi noti
     all.psi<-obj.seg$indexU[[x.name]]
@@ -95,18 +96,18 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
   nSeg<- length(object$nameUV$Z)
   type<-match.arg(type)
   interval<-match.arg(interval)
-  
-  
+
+
   #browser()
-  
-  if(inherits(object, "glm") && object$family$family!="gaussian" && interval=="prediction") 
+
+  if(inherits(object, "glm") && object$family$family!="gaussian" && interval=="prediction")
     stop("prediction intervals are not allowed with non-gaussian glm")
   nameU<-object$nameUV$U
   nameV<-object$nameUV$V
   nameZ<-object$nameUV$Z
-  
+
   #browser()
-  
+
   if(missing(newdata)){
     X <- model.matrix(object)
   } else {
@@ -124,49 +125,49 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
       # if(any(!idSeg)){
       #   Fo<- update.formula(Fo, as.formula(paste("~.+", paste(object$nameUV$Z[!idSeg], collapse="+"))))
       # }
-      
+
       #nomiTerms, a differenza di nomiLin, include eventuali poly(w,2)
       nomiTerms<-setdiff(attr(terms(formula(object)),"term.labels"),c(object$nameUV$U,object$nameUV$V))
       idSeg<- object$nameUV$Z %in% nomiLin #potresti mettere anche "nomiTerms"
       if(any(!idSeg)){
         nomiTerms <- c(nomiTerms, object$nameUV$Z[!idSeg])
       }
-      
+
       Fo<-as.formula(paste("~.+", paste(nomiTerms, collapse="+")))
-      
+
       M<-model.matrix(Fo, data=newdata,
               contrasts=object$contrasts, xlev = object$xlevels)
-      
+
     } else { #se l'ogg e' stato ottenuto da segreg
       Fo<-as.formula(object$nameUV$formulaSegAllTerms)
       if(any(all.vars(Fo)%in%names(object$xlevels))){
-        M<-model.matrix(Fo, data=newdata, 
+        M<-model.matrix(Fo, data=newdata,
                       contrasts = object$contrasts, xlev=object$xlevels)
       } else {
         M<-model.matrix(Fo, data=newdata)
       }
-      
+
       #nomiLin<- all.vars(object$formulaLin)[-1] #non funziona se la rispo e' cbind(y,n-y)
       nomiLin <- all.vars(as.formula(paste("~",paste(object$formulaLin)[3])))
-      
+
       if(any(!nomiLin%in%all.vars(Fo))){
         #nomiLinOK<- nomiLin[!nomiLin%in%all.vars(Fo)]
         terminLin<-attr(terms(object$formulaLin),"term.labels")[!nomiLin%in%all.vars(Fo)]
         Fo <- as.formula(paste("~.-1+",paste(terminLin,collapse="+")))
         #Fo <- update.formula(Fo, as.formula(paste("~.+",paste(terminLin,collapse="+"))))
-        M1<-model.matrix(Fo, data=newdata, 
+        M1<-model.matrix(Fo, data=newdata,
                 contrasts = object$contrasts, xlev=object$xlevels)
         M<-cbind(M, M1) #[,nomiLinOK,drop=FALSE])
       }
 
     }
-    
+
     for(i in 1:length(nameZ)){
-      x.values <- M[,nameZ[i]] 
+      x.values <- M[,nameZ[i]]
       DM<-dummy.matrix(x.values, nameZ[i], object)
       r[[i]]<-DM
     }
-    
+
     #browser()
     X <-data.matrix(matrix(unlist(r), nrow=n, byrow = FALSE))
     colnames(X)<- unlist(sapply(r, colnames))
@@ -181,7 +182,7 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
         nomeU.i<-grep(object$nameUV$Z[i], object$nameUV$U, value=TRUE)
         idU.i <- match(nomeU.i, names(estcoef))
         coef.new<-drop(object$constr$invA.RList[[i]]%*%estcoef[nomeU.i])
-        names(coef.new)<-c(object$nameUV$Z[i], 
+        names(coef.new)<-c(object$nameUV$Z[i],
                            paste("U",1:(length(coef.new)-1),".",object$nameUV$Z[i],sep="" ))
         estcoef<-append(estcoef[-idU.i], coef.new, after=idU.i[1]-1)
     }
@@ -189,10 +190,10 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
   X<-X[,names(estcoef),drop=FALSE]
 
   if(length(setdiff(colnames(X),names(estcoef)))>0) stop("error in the names (of the supplied newdata)")
-  
+
   #browser()
   colnomi<- colnames(X)
-  
+
   colnomi.noV <- setdiff(colnomi, nameV)
   X.noV <- X[, colnomi.noV, drop=FALSE]
   estcoef.noV<- estcoef[colnomi.noV]
@@ -201,20 +202,20 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
   #nomiOK<- intersect(names(estcoef.noV), colnames(X.noV))
   #X.noV<- X.noV[, nomiOK, drop=FALSE]
   #estcoef.noV<-estcoef.noV[nomiOK]
-  
+
   mu <- eta<- drop(X.noV%*% estcoef.noV)
-  
+
   #ATTENZIONE c'e' il problema dell'appaiamento dei nomi!!!
-  #il problema e' che estcoef non ha sempre nomi!! 
+  #il problema e' che estcoef non ha sempre nomi!!
 
   X <- X[,c(colnomi.noV, nameV),drop=FALSE]
 
   if(inherits(object, "glm") && type=="response") {
-    mu<-object$family$linkinv(mu) 
+    mu<-object$family$linkinv(mu)
   }
   #browser()
   if(interval!="none" || se.fit){
-    V <- vcov(object) 
+    V <- vcov(object)
     if(!is.null(object$constr)){
       B=if(nLin>0) append(list(diag(nLin)), object$constr$invA.RList, 1) else object$constr$invA.RList
       B=append(B, list(diag(length(nameV))), 2)
@@ -226,7 +227,7 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
     se <- sqrt(rowSums((X %*% V) * X))
     if(inherits(object, "glm")) {
       if(type=="response") se <- abs(object$family$mu.eta(eta))*se
-      z<-abs(qnorm((1-level)/2)) 
+      z<-abs(qnorm((1-level)/2))
       s2<-summary(object)$dispersion
     } else {
       z <- abs(qt((1-level)/2, df=object$df.residual))
@@ -245,5 +246,5 @@ predict.segmented<-function(object, newdata, se.fit=FALSE, interval=c("none","co
   }
   return(mu)
 }
-  
- 
+
+

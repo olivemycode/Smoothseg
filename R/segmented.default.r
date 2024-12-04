@@ -1,3 +1,4 @@
+#' @export
 segmented.default<-function (obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model = TRUE,
     keep.class = FALSE, min_obs = min_obs, ...) {
 

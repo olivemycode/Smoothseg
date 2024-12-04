@@ -1,5 +1,6 @@
+#' @export
 `segmented.numeric` <-
-function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model = TRUE, keep.class=FALSE, 
+function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model = TRUE, keep.class=FALSE,
          adjX=FALSE, weights=NULL,  ...) { #sparse=FALSE,
   build.all.psi<-function(psi, fixed.psi){
     all.names.psi<-union(names(psi),names(fixed.psi))
@@ -19,15 +20,15 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     return(all.psi)
   }
   ##===inizio funzione
-  
+
   if(!(is.vector(obj) || is.ts(obj))) stop(" 'obj' should be a numerical/ts vector ")
   #if(!is.vector(obj)) stop(" 'obj' should be a numerical vector ")
-  
+
   y <- obj
   n <- length(y)
-  
+
   #browser()
-  
+
   if(missing(seg.Z)) {
     if(is.ts(obj)){
       Tsp<-tsp(obj)
@@ -36,7 +37,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       name.Z <- "Time"
       if(is.null(adjX)) {
         adjX<- if(min.x>=1000) TRUE else FALSE
-      } 
+      }
       if(adjX) x<- x - min.x
     } else {
       x<-1:n/n
@@ -48,17 +49,17 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     name.Z <- all.vars(seg.Z)
     adjX= FALSE
   }
-  
+
   #browser()
-  
+
   if(!missing(seg.Z) && length(all.vars(seg.Z))>1) stop(" multiple seg.Z not allowed here: use 'segmented.(g)lm or segreg")
   Fo0<-as.formula(paste(deparse(substitute(obj)), " ~ ", name.Z, sep=""))
   #Fo0<-as.formula(paste(deparse(substitute(obj, env = parent.frame())), " ~ ", name.Z, sep="")) #qui mantiene il nome 'obj'
-  
+
   #browser()
   y.only.vector <- TRUE
   alpha<-control$alpha
-  if(is.null(alpha)) alpha<- max(.05, 1/length(y)) 
+  if(is.null(alpha)) alpha<- max(.05, 1/length(y))
   if(length(alpha)==1) alpha<-c(alpha, 1-alpha)
   #browser()
   if(missing(psi)){
@@ -66,7 +67,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     #psi <- seq(min(x), max(x), l=npsi+2)[-c(1, npsi+2)] #psi[[i]]<-(min(Z[[i]])+ diff(range(Z[[i]]))*(1:K)/(K+1))
     qx <- quantile(x, probs=c(alpha, 1-alpha), names = FALSE)
     psi <- seq(qx[1], qx[2], l=npsi+2)[-c(1, npsi+2)]
-    
+
   } else {
     npsi<-length(psi)
   }
@@ -89,15 +90,15 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     id.weights <- TRUE
   }
 
-    fc<- min(max(abs(control$fc),.8),1)       
+    fc<- min(max(abs(control$fc),.8),1)
     min.step<-control$min.step
-    
+
     it.max <- old.it.max<- control$it.max
     digits<-control$digits
     toll <- control$toll
     if(toll<0) stop("Negative tolerance ('tol' in seg.control()) is meaningless", call. = FALSE)
     visual <- control$visual
-    
+
     stop.if.error<-control$stop.if.error
     fix.npsi<-fix.npsi<-control$fix.npsi
     if(!is.null(stop.if.error)) {#if the old "stop.if.error" has been used..
@@ -105,7 +106,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     } else {
       stop.if.error<-fix.npsi
     }
-    
+
     break.boot=control$break.boot
     n.boot<-control$n.boot
     size.boot<-control$size.boot
@@ -116,7 +117,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     visual <- control$visual
     visualBoot<-FALSE
     if(visual && n.boot>0) {visual<-FALSE; visualBoot<-TRUE}
-    
+
 #     if(n.boot>0){
 #         if(!is.null(control$seed)) {
 #             set.seed(control$seed)
@@ -137,15 +138,15 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     invXtX=NULL
     Xty<-NULL
     nomiOK<-nomiU
-    
+
     opz<-list(toll=toll,h=h, stop.if.error=stop.if.error, dev0=dev0, visual=visual, it.max=it.max,
-        nomiOK=nomiOK, id.psi.group=id.psi.group, gap=gap, visualBoot=visualBoot, pow=pow, digits=digits,invXtX=invXtX, Xty=Xty, 
+        nomiOK=nomiOK, id.psi.group=id.psi.group, gap=gap, visualBoot=visualBoot, pow=pow, digits=digits,invXtX=invXtX, Xty=Xty,
         conv.psi=conv.psi, alpha=alpha, fix.npsi=fix.npsi, min.step=min.step, fc=fc, id.weights=id.weights, seed=control$seed)
     if(n.boot<=0){
     #obj<- if(sparse) seg.num.spar.fit(y, XREG, Z, PSI, weights,  opz) else seg.num.fit(y, XREG, Z, PSI, weights,  opz)
       obj<- seg.num.fit(y, XREG, Z, PSI, weights,  opz)
     } else {
-    obj<-seg.num.fit.boot(y, XREG, Z, PSI, weights, opz, n.boot=n.boot, size.boot=size.boot, random=random, 
+    obj<-seg.num.fit.boot(y, XREG, Z, PSI, weights, opz, n.boot=n.boot, size.boot=size.boot, random=random,
                           break.boot=break.boot) #, sparse=sparse) #jt, nonParam
     seed <- obj$seed
       }
@@ -153,9 +154,9 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
         warning("No breakpoint estimated", call. = FALSE)
         return(y)
         }
-    
+
     #browser()
-    
+
     #if(obj$obj$df.residual==0) warning("no residual degrees of freedom (other warnings expected)", call.=FALSE)
     id.psi.group<-obj$id.psi.group
     nomiOK<-obj$nomiOK
@@ -182,7 +183,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
 
     #se usi una procedura automatica devi cambiare ripetizioni, nomiU e nomiV, e quindi:
     length.psi<-tapply(as.numeric(as.character(names(psi))), as.numeric(as.character(names(psi))), length)
-    
+
     #forma.nomiU <-function(xx,yy)paste("U",1:xx, ".", yy, sep="")
     #forma.nomiVxb <-function(xx,yy)paste("psi",1:xx, ".", yy, sep="")
     #nomiU   <- unlist(mapply(forma.nomiU, length.psi, name.Z)) #invece di un ciclo #paste("U",1:length.psi[i], ".", name.Z[i])
@@ -191,18 +192,18 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     #nomiVxb <- unlist(mapply(forma.nomiVxb, length.psi, nomiFINALI))
     nomiVxb <- sub("U","psi", nomiU)
 
-    
+
     #########========================= SE PSI FIXED
     psi.list<-vector("list", length=length(unique(nomiZ)))
     names(psi.list)<-unique(nomiZ)
-    #names(psi)<-nomiZ #se e' una procedure automatica nomiZ puo essere piu lungo dei breakpoints "rimasti" 
+    #names(psi)<-nomiZ #se e' una procedure automatica nomiZ puo essere piu lungo dei breakpoints "rimasti"
     names(psi)<-rep(nomiFINALI, length.psi)
     for(i in names(psi.list)){
       psi.list[[i]]<-psi[names(psi)==i]
     }
 
     #browser()
-    
+
     #mf<- model.frame(update.formula(Fo0, .~ x))
     mf<- data.frame(y,x)
     names(mf)<-all.vars(Fo0)
@@ -219,12 +220,12 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     #mf <-  eval(mf, parent.frame()) #forse NON serve.. mf c'e'..
     objF <-lm(Fo, data=mf, weights=weights)
     #browser()
-    
+
     isNAcoef<-any(is.na(objF$coefficients))
     if(isNAcoef){
       if(stop.if.error) {
        cat("breakpoint estimate(s):", as.vector(psi),"\n")
-       stop("at least one coef is NA: breakpoint(s) at the boundary? (possibly with many x-values replicated)", 
+       stop("at least one coef is NA: breakpoint(s) at the boundary? (possibly with many x-values replicated)",
          call. = FALSE)
           } else {
         warning("some estimate is NA: too many breakpoints? 'var(hat.psi)' cannot be computed \n ..returning a 'lm' model", call. = FALSE)
@@ -233,22 +234,22 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
         objF <-lm(Fo, weights=weights, data=mf)
         names(psi)<-nomiVxb
         objF$psi<-psi
-        return(objF)      
+        return(objF)
         }
     }
 
     #browser()
-    
-    
-    objF$coefficients[names(objF$coefficients)] <- obj$coefficients #sostituisce tutti i coeff 
+
+
+    objF$coefficients[names(objF$coefficients)] <- obj$coefficients #sostituisce tutti i coeff
     objF$residuals<- as.numeric(obj$residuals)
-    objF$fitted.values<- y- as.numeric(obj$residuals) #as.numeric(obj$fitted.values) #y-obj$residuals 
-    Cov <- vcov(objF) 
+    objF$fitted.values<- y- as.numeric(obj$residuals) #as.numeric(obj$fitted.values) #y-obj$residuals
+    Cov <- vcov(objF)
     id <- match(nomiVxb, names(coef(objF)))
     vv <- if (length(id) == 1) Cov[id, id] else diag(Cov[id, id])
     #if(length(initial)!=length(psi)) initial<-rep(NA,length(psi))
     a<-tapply(id.psi.group, id.psi.group, length) #ho sovrascritto "a" di sopra, ma non dovrebbe servire..
-    
+
     ris.psi<-matrix(NA,length(psi),3)
     colnames(ris.psi) <- c("Initial", "Est.", "St.Err")
     rownames(ris.psi) <- nomiVxb
@@ -267,15 +268,15 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
         }
     #initial<-unlist(mapply(function(x,y){if(is.na(x)[1])rep(x,y) else x }, initial.psi, a.ok, SIMPLIFY = TRUE))
     initial<-unlist(mapply(function(x,y){if(is.na(x)[1])rep(x,y) else x }, initial.psi[nomiFINALI], a.ok[a.ok!=0], SIMPLIFY = TRUE))
-    if(stop.if.error)  ris.psi[,1]<-initial 
+    if(stop.if.error)  ris.psi[,1]<-initial
     #psi <- cbind(initial, psi, sqrt(vv))
     #rownames(psi) <- colnames(Cov)[id]
     #browser()
-    
+
     objF$rangeZ <- rangeZ
     objF$psi.history <- psi.values
     objF$psi <- ris.psi
-    objF$it <- it 
+    objF$it <- it
     objF$epsilon <- obj$epsilon
     objF$call <- match.call()
     objF$nameUV <- list(U = drop(nomiU), V = rownames(ris.psi), Z = nomiFINALI) #Z = name.Z

@@ -1,3 +1,4 @@
+#' @export
 model.matrix.segmented<-function(object,...){
   #if(!inherits(object, "segmented")) stop("A 'segmented' fit is requested")
   if(inherits(object, "lm")) {

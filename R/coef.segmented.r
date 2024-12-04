@@ -1,3 +1,4 @@
+#' @export
 coef.segmented<-function(object, include.psi=FALSE, ...){
   b<- object$coefficients
   if(include.psi){

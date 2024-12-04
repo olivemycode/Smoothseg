@@ -1,9 +1,10 @@
 #vc<-function(obj){
 #  invXtX<-chol2inv(qr.R(obj$qr)) #(XtX)^{-1}
-#  V<-vcov.segmented(obj,is=TRUE) 
+#  V<-vcov.segmented(obj,is=TRUE)
 #  s2<- if(inherits(obj, "glm")) summary.glm(obj)$dispersion else summary.lm(obj)$sigma^2
 #  s2*V%*% invXtX %*% V
 #}
+#' @export
 
 vcov.segmented<-function(object, var.diff=FALSE, is=FALSE, ...){
   #if(is && inherits(object, "Arima")) {
@@ -21,7 +22,7 @@ vcov.segmented<-function(object, var.diff=FALSE, is=FALSE, ...){
     for(i in 1:length(nomiV)){
       nomeU<-nomiU[i]
       nomeV<-nomiV[i]
-      nomepsi<-strsplit(nomeV,"\\.")[[1]][1] #solo "psi1" o "psi2",.. e' meglio estrarre il "psi1" perche' il nome della variabile puo' contenere un punto.. 
+      nomepsi<-strsplit(nomeV,"\\.")[[1]][1] #solo "psi1" o "psi2",.. e' meglio estrarre il "psi1" perche' il nome della variabile puo' contenere un punto..
       nomeZ<-gsub(paste(nomepsi,".",sep=""),"",nomeV) #estrae il nome della variabile..
       Z<-X[,nomeZ]
       est.psi<- object$psi[nomeV,"Est."]
@@ -37,7 +38,7 @@ vcov.segmented<-function(object, var.diff=FALSE, is=FALSE, ...){
     v<-s2*solve(crossprod(X*sqrt(w)))
     return(v)
       } else {
-    if(inherits(object, "Arima")){ 
+    if(inherits(object, "Arima")){
       v<-object$var.coef
       return(v)
     }
@@ -46,7 +47,7 @@ vcov.segmented<-function(object, var.diff=FALSE, is=FALSE, ...){
         so <- summary.glm(object, correlation = FALSE, ...)
         v<-so$dispersion * so$cov.unscaled
         return(v)
-    } 
+    }
     if(inherits(object, "lm")){
         if(var.diff){
             if(length(object$nameUV$Z)>1) {

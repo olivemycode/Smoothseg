@@ -1,14 +1,15 @@
+#' @export
 `summary.stepmented` <-
 function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
-    
+
     if(!is.null(.vcov)) var.diff<-FALSE
     if(var.diff && length(object$nameUV$Z)>1) {
       var.diff<-FALSE
       warning(" 'var.diff' set to FALSE with multiple segmented variables", call.=FALSE)
       }
-    
+
     #browser()
-    
+
     nomiU<-object$nameUV$U
     nomiV<-object$nameUV$V
     nomiPsi<- gsub("V", "psi", nomiV)
@@ -26,13 +27,13 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
     if("lm"%in%class(object) && !"glm"%in%class(object)){
       summ <- c(summary.lm(object, ...), object["psi"])
       summ$Ttable <-summ$coefficients
-      
+
       summ$Ttable[,"Std. Error"] <- sqrt(diag(vcov(object)))
-      summ$Ttable[,"t value"] <- summ$Ttable[,"Estimate"]/summ$Ttable[,"Std. Error"] 
+      summ$Ttable[,"t value"] <- summ$Ttable[,"Estimate"]/summ$Ttable[,"Std. Error"]
       summ$Ttable[,"Pr(>|t|)"] <- 2*pt(abs(summ$Ttable[,"t value"]), df=object$df.residual, lower.tail = FALSE) # summ$Ttable[,"Estimate"]/summ$Ttable[,"Std. Error"]
-      
+
       #browser()
-      
+
       if(var.diff){
         stop("not allowed")
         # modifica gli SE
@@ -40,7 +41,7 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
         p <- object$rank #n.parametri stimati
         p1 <- 1L:p
         inv.XtX <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
-        X <- qr.X(Qr,FALSE) 
+        X <- qr.X(Qr,FALSE)
         attr(X, "assign") <- NULL
         K<-length(unique(object$id.group)) #n.gruppi (=n.psi+1)
         dev.new<-tapply(object$residuals, object$id.group, function(.x){sum(.x^2)})
@@ -63,7 +64,7 @@ function(object, short=FALSE, var.diff=FALSE, p.df="p", .vcov=NULL, ...){
             summ$Ttable[,4]<- 2 * pt(abs(summ$Ttable[,3]),df=object$df.residual, lower.tail = FALSE)
       }
           summ$Ttable[idU,4]<-NA
-          summ$Ttable<-summ$Ttable[-idV,] 
+          summ$Ttable<-summ$Ttable[-idV,]
           summ[c("it","epsilon","conv.warn")]<-object[c("it","epsilon","id.warn")]
           summ$n.boot<-length(na.omit(object$psi.history$all.ss))
 

@@ -1,3 +1,4 @@
+#' @export
 segmented.Arima<-
 function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model = TRUE, keep.class=FALSE, ...) {
 #Richiede control$f.obj that should be a string like "sum(x$residuals^2)" or "x$dev"
@@ -46,23 +47,23 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
   if("V" %in% sub("V[1-9]*[0-9]","V", c(all.vars(seg.Z), names(coef(obj))))) stop("variable names 'V', 'V1', .. are not allowed")
   if("U" %in% sub("U[1-9]*[0-9]","U", c(all.vars(seg.Z), names(coef(obj))))) stop("variable names 'U', 'U1', .. are not allowed")
   if(any(c("$","[") %in% all.names(seg.Z))) stop(" '$' or '[' not allowed in 'seg.Z' ")
-  
+
   n.Seg<-length(all.vars(seg.Z))
   id.npsi<-FALSE
-    if(missing(psi)) { 
+    if(missing(psi)) {
     if(n.Seg==1){
       if(missing(npsi)) npsi<-1
       npsi<-lapply(npsi, function(.x).x)
-      if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match") 
+      if(length(npsi)!=length(all.vars(seg.Z))) stop("seg.Z and npsi do not match")
       names(npsi)<-all.vars(seg.Z)
     } else {#se n.Seg>1
-      #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE) 
+      #if(missing(npsi)) stop(" with multiple segmented variables in seg.Z, 'psi' or 'npsi' should be supplied", call.=FALSE)
       if (missing(npsi)) {
         npsi<-rep(1, n.Seg)
         names(npsi)<-all.vars(seg.Z)
       }
       if(length(npsi)!=n.Seg) stop(" 'npsi' and seg.Z should have the same length")
-      if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")    
+      if(!all(names(npsi) %in% all.vars(seg.Z))) stop(" names in 'npsi' and 'seg.Z' do not match")
     }
     psi<-lapply(npsi, function(.x) rep(NA,.x))
     id.npsi<-TRUE ##id.npsi<-FALSE #e' stato fornito npsi?
@@ -75,8 +76,8 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       if(!all(names(psi)%in%all.vars(seg.Z))) stop("Names in `seg.Z' and `psi' do not match")
     }
   }
-  
-    fc<- min(max(abs(control$fc),.8),1) 
+
+    fc<- min(max(abs(control$fc),.8),1)
     min.step<-control$min.step
     alpha<-control$alpha
     it.max <- old.it.max<- control$it.max
@@ -121,11 +122,11 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(length(name.Z)!=ncol(Z)) stop("errore strano 2")
     n<-nrow(Z)
     n.psi<- length(unlist(psi))
-    
+
     #################
     #if(ncol(Z)==1 && length(psi)==1 && n.psi==1 && !any(is.na(psi))) { if(psi==Inf) psi<-median(Z)}
     #################
-    
+
     if(ncol(Z)==1 && is.vector(psi) && (is.numeric(psi)||is.na(psi))){
       psi <- list(as.numeric(psi))
       names(psi)<-name.Z
@@ -157,7 +158,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       if(!(names(fixed.psi) %in% all.vars(seg.Z))) stop("names(fixed.psi) is not a subset of variables in 'seg.Z' ")
     } else {
       stop(" 'fixed.psi' has to be a named list ")
-      } 
+      }
     fixed.psi<-lapply(fixed.psi, sort)
     Zfixed<-matrix(unlist(mapply(function(x,y)rep(x,y),Z[names(fixed.psi)], sapply(fixed.psi, length), SIMPLIFY = TRUE)), nrow=n)
     n.fixed.psi<-sapply(fixed.psi, length)
@@ -172,24 +173,24 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     a <- sapply(psi, length)
     #per evitare che durante il processo iterativo i psi non siano ordinati
     id.psi.group <- rep(1:length(a), times = a) #identificativo di apparteneza alla variabile
-    
+
     Z<-matrix(unlist(mapply(function(x,y)rep(x,y),Z,a,SIMPLIFY = TRUE)),nrow=n,byrow = TRUE)
     #negli altri metodi Z e' una lista per cui la linea di sopra diventa
     #Z<-matrix(unlist(mapply(function(x,y)rep(x,y),Z,a,SIMPLIFY = TRUE)),nrow=n)
     colnames(Z) <- nomiZ.vett <- rep(nome, times = a) #SERVE??? si perche' Z e' senza colnames
-    
+
     psi <- unlist(psi)
     #se psi e' numerico, la seguente linea restituisce i valori ordinati all'interno della variabile..
     psi<-unlist(tapply(psi,id.psi.group,sort))
     k <- ncol(Z)
     PSI <- matrix(rep(psi, rep(n, k)), ncol = k)
 
-        
+
     #controllo se psi e' ammissibile..
     c1 <- apply((Z <= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo <)
     c2 <- apply((Z >= PSI), 2, all) #dovrebbero essere tutti FALSE (prima era solo >)
     if(sum(c1 + c2) != 0 || is.na(sum(c1 + c2)) ) stop("starting psi out of the admissible range")
-    
+
     #ripetizioni <- as.numeric(unlist(sapply(table(nomiZ)[order(unique(nomiZ))], function(xxx) {1:xxx})))
     ripetizioni <- as.vector(unlist(tapply(id.psi.group, id.psi.group, function(x) 1:length(x) )))
     nomiU <- paste("U", ripetizioni, sep = "")
@@ -197,11 +198,11 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     nomiV <- paste("V", ripetizioni, sep = "")
     nomiV <- paste(nomiV, nomiZ.vett, sep = ".")
     nnomi <- c(nomiU, nomiV)
-    
+
     XREG<-eval(obj$call$xreg)
     if(!is.null(XREG)){
       #se ci sono factor?
-      nomiXREG<-setdiff(names(obj$coef),c("intercept", paste("ar",1:100,sep=""), paste("ma",1:100,sep=""), 
+      nomiXREG<-setdiff(names(obj$coef),c("intercept", paste("ar",1:100,sep=""), paste("ma",1:100,sep=""),
                                           paste("sma",1:100,sep=""), paste("sar",1:100,sep="")))
       XREG<-matrix(XREG, ncol=length(nomiXREG))
       colnames(XREG)<-nomiXREG
@@ -210,34 +211,34 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     }
     mio.init<-mio.init.noV<-NULL
     X<-NULL
-    call.ok <- update(obj,  xreg = X, init=mio.init, evaluate=FALSE) #ho messo X, piuttosto che cbind(XREG,U,V) 
+    call.ok <- update(obj,  xreg = X, init=mio.init, evaluate=FALSE) #ho messo X, piuttosto che cbind(XREG,U,V)
     call.noV <- update(obj, xreg = cbind(XREG,U), init=mio.init.noV,  evaluate=FALSE) #, data = mfExt) #objF <- update(obj0, formula = Fo, data = KK)
     #    call.noV <- update(obj, formula = Fo.noV,  evaluate=FALSE, data = mfExt) #objF <- update(obj0, formula = Fo, data = KK)
-    
+
     if (it.max == 0) {
       U<-(Z-PSI)*(Z>PSI)
       colnames(U)<-nomiU
       obj1 <- eval(call.noV) #, envir=mfExt)
       return(obj1)
     }
-    
+
     #obj1 <- eval(call.ok, envir=mfExt)
     initial <- psi
     obj0 <- obj
-    
+
     dev0<- -obj$loglik
     if(is.na(dev0)) dev0<-10
-    
+
     list.obj <- list(obj)
     nomiOK<-nomiU
-    
+
     if(is.null(alpha)) alpha<- max(.05, 1/nrow(PSI))
     if(length(alpha)==1) alpha<-c(alpha, 1-alpha)
-    
+
     opz<-list(toll=toll,h=h,stop.if.error=stop.if.error,dev0=dev0,visual=visual,it.max=it.max,
               nomiOK=nomiOK, id.psi.group=id.psi.group, gap=gap, visualBoot=visualBoot, pow=pow, digits=digits,
               conv.psi=conv.psi, alpha=alpha, fix.npsi=fix.npsi, min.step=min.step, fc=fc, seed=control$seed)
-    
+
     opz$call.ok<-call.ok
     opz$call.noV<-call.noV
     opz$nomiU<-nomiU
@@ -246,11 +247,11 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(n.boot<=0){
       obj<- seg.Ar.fit(obj, XREG, Z, PSI, opz)
     } else {
-      obj<- seg.Ar.fit.boot(obj, XREG, Z, PSI, opz, n.boot=n.boot, size.boot=size.boot, random=random, 
+      obj<- seg.Ar.fit.boot(obj, XREG, Z, PSI, opz, n.boot=n.boot, size.boot=size.boot, random=random,
                             break.boot=break.boot) #jt, nonParam
       seed <- obj$seed
     }
-    
+
     if(!is.list(obj)){
       warning("No breakpoint estimated", call. = FALSE)
       return(obj0)
@@ -269,7 +270,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     #se e' stata usata una proc automatica "nomiFINALI" sara' differente da "name.Z"
     nomiSenzaPSI<-setdiff(name.Z,nomiFINALI)
     if(length(nomiSenzaPSI)>=1) warning("no breakpoints found for: ", paste(nomiSenzaPSI," "), call. = FALSE)
-    
+
     #########========================= SE PSI FIXED
     psi.list<-vector("list", length=length(unique(name.Z)))
     names(psi.list)<-unique(name.Z)
@@ -299,7 +300,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     if(id.psi.fixed){
       XREG.ok<-cbind(XREG.ok, fixedU)
     }
-    objF <- update(obj0,  xreg = XREG.ok, evaluate=TRUE) 
+    objF <- update(obj0,  xreg = XREG.ok, evaluate=TRUE)
 
     #    #se usi una procedura automatica devi cambiare ripetizioni, nomiU e nomiV, e quindi:
     #    length.psi<-tapply(as.numeric(as.character(names(psi))), as.numeric(as.character(names(psi))), length)
@@ -314,11 +315,11 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
       objF$loglik<-obj$loglik
       objF$sigma2 <-obj$sigma2
       objF$aic <- obj$aic + 2*k
-      
-      if(any(is.na(objF$coef))){ 
+
+      if(any(is.na(objF$coef))){
         stop("some estimate is NA: premature stopping with a large number of breakpoints?", call. = FALSE)
       }
-    
+
     Cov<-objF$var.coef
     vv<- Cov[nomiVxb, nomiVxb, drop=FALSE]
     ris.psi<-matrix(NA,length(psi),3)
@@ -339,7 +340,7 @@ function(obj, seg.Z, psi, npsi, fixed.psi=NULL, control = seg.control(), model =
     #    initial<-unlist(mapply(function(x,y){if(is.na(x)[1])rep(x,y) else x }, initial.psi, a.ok, SIMPLIFY = TRUE))
     initial<-unlist(mapply(function(x,y){if(is.na(x)[1])rep(x,y) else x }, initial.psi[nomiFINALI], a.ok[a.ok!=0], SIMPLIFY = TRUE))
     if(stop.if.error)  ris.psi[,1]<-initial
-    
+
     objF$Z <- Z
     objF$rangeZ <- rangeZ
     objF$psi.history <- psi.values
