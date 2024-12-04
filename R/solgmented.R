@@ -75,7 +75,7 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
       yy<-y[id==i]
       xx<-x[id==i]
       olm<-lm(yy~xx) #, data=d)
-      .a <- capture.output(r[[i]] <-try(suppressWarnings(selgmented(olm, ~xx, type=type, Kmax=K1,
+      .a <- capture.output(r[[i]] <-try(suppressWarnings(solgmented(olm, ~xx, type=type, Kmax=K1,
                                                     refit=FALSE, msg=FALSE, G=1, control=control, check.dslope=FALSE)
                                                     ), silent=TRUE))
       if(inherits(r[[i]],"try-error")) r[[i]]<- olm
@@ -444,7 +444,7 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
         #= inizio for
         #browser()
         for(i in 2:Kmax){
-          #source("C:/dati/lavori/segmented/segIntermedio/segmented/R/selgmented.R")
+          #source("C:/dati/lavori/segmented/segIntermedio/segmented/R/solgmented.R")
           #if(i==3) browser()
           .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=startpsi[[i-1]], control=control1), silent=TRUE)))
           if(msg) {
