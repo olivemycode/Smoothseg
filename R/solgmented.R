@@ -130,10 +130,10 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
     control2$n.boot=6
     while(length(tvalueU)>=1){
       .a <- capture.output(os0 <- try(suppressWarnings(
-          segmented(olm, ~x, psi=all.psi, control=control2)), silent=TRUE))
+          segmented(olm, ~x, psi=all.psi, min_obs = th, control=control2)), silent=TRUE))
       if(!inherits(os0, "segmented")) {
         .a <- capture.output(os0 <- try(suppressWarnings(
-          segmented(olm, ~x, npsi=length(all.psi), control=control1)), silent=TRUE))
+          segmented(olm, ~x, npsi=length(all.psi), min_obs = th, control=control1)), silent=TRUE))
       }
 
       if(inherits(os0, "segmented")) {
@@ -404,12 +404,12 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
 
       npsiVeri<-0
       #fit with 1 breakpoint
-      .a<-capture.output(os<- suppressWarnings(try(segmented(olm, seg.Z, npsi=1, control=control1), silent=TRUE)))
+      .a<-capture.output(os<- suppressWarnings(try(segmented(olm, seg.Z, npsi=1, min_obs = th, control=control1), silent=TRUE)))
       ris<- NULL
       ris[[1]] <- os #<- suppressWarnings(try(segmented(olm, seg.Z, npsi=1, control=control1), silent=TRUE))
       #if fails try boot restating
       if(inherits(os, "try-error")) {
-        .a <- capture.output(os<- suppressWarnings(try(segmented(olm, seg.Z, npsi=1, control=control), silent=TRUE)))
+        .a <- capture.output(os<- suppressWarnings(try(segmented(olm, seg.Z, npsi=1, min_obs = th, control=control), silent=TRUE)))
         ris[[1]]<- os
       }
 
@@ -446,7 +446,7 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
         for(i in 2:Kmax){
           #source("C:/dati/lavori/segmented/segIntermedio/segmented/R/solgmented.R")
           #if(i==3) browser()
-          .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=startpsi[[i-1]], control=control1), silent=TRUE)))
+          .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=startpsi[[i-1]], min_obs = th, control=control1), silent=TRUE)))
           if(msg) {
             flush.console()
             cat(paste(i,".. "))
@@ -488,9 +488,9 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
             psi0 <- sum(M[which.max(diffpsi),])/2
             start.ora<- sort(c(psi0, M[-c(which.min(diffpsi), nrow(M)),2]))
             startpsi[[i-1]] <- start.ora
-            .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=start.ora, control=control1), silent=TRUE)))
+            .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=start.ora, min_obs = th, control=control1), silent=TRUE)))
             if(!inherits(os, "segmented")) { #vai con il boot restrat
-              .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=start.ora, control=control), silent=TRUE)))
+              .a <- capture.output(os<-suppressWarnings(try(segmented(olm, seg.Z, psi=start.ora, min_obs = th, control=control), silent=TRUE)))
             }
             if(inherits(os, "segmented")) {
               conv[i]<-1
@@ -669,7 +669,7 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
           if(p2>alpha.adj) {
             out<-olm
             } else {
-              out<-segmented(olm, seg.Z, npsi=1, control=control)
+              out<-segmented(olm, seg.Z, npsi=1, min_obs = th, control=control)
             }
           } else {
             p2.label<-"p-value '1 vs 2' "
@@ -682,7 +682,7 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
             #olm<-update(olm, data=model.frame(olm)) #questo e' necessario per far funzionare davies.test() sotto..
             ################
             if(type=="score") {
-              o1<-segmented(olm, seg.Z, npsi=1, control=control)
+              o1<-segmented(olm, seg.Z, npsi=1, min_obs = th, control=control)
               p2<-pscore.test(o1, seg.Z, more.break=TRUE)$p.value
               } else {
                 #KK<-new.env()
@@ -692,16 +692,16 @@ solgmented <-function(olm, seg.Z, Kmax=2, type=c("score", "bic", "davies", "aic"
                 olm<-update(olm, data=MF)
                 #olm$call$data<-quote(MF)
                 #olm<-update(olm, data=model.frame(olm)) #questo e' necessario per far funzionare davies.test() sotto..
-                o1 <- segmented(olm, seg.Z, npsi = 1, control = control)
+                o1 <- segmented(olm, seg.Z, npsi = 1, min_obs = th, control = control)
                 p2<-  davies.test(o1, seg.Z)$p.value
               }
             if(!bonferroni) alpha.adj<-alpha
             if(p2>alpha.adj) {
-              o1<-segmented(olm, seg.Z, npsi=1, control=control)
+              o1<-segmented(olm, seg.Z, npsi=1, min_obs = th, control=control)
               #cat("One breakpoint detected\n")
               out<-o1
               } else {
-                  o2<-segmented(olm, seg.Z, npsi=2, control=control)
+                  o2<-segmented(olm, seg.Z, npsi=2, min_obs = th, control=control)
                   #cat("Two breakpoint detected\n")
                   out<-o2
               }
